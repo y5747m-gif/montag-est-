@@ -1,0 +1,95 @@
+name: بناء التطبيق (APK + EXE)
+
+# يعمل عند أي دفع (لتحصل على الملفات فورًا)، وعند الوسوم v* لإنشاء إصدار رسمي، ويدويًا من تبويب Actions
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  # ================= أندرويد: APK صغير الحجم =================
+  android-apk:
+    name: أندرويد APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: تثبيت Android SDK 36
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: تثبيت الاعتماديات
+        run: npm ci
+
+      - name: تجهيز الويب ومزامنة أندرويد
+        run: npm run build:web && npx cap sync android
+
+      - name: بناء APK (Release مُصغّر بـ R8)
+        run: cd android && sh gradlew assembleRelease --no-daemon
+
+      - name: رفع ملف APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MontageStudio-Android-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 90
+
+  # ================= ويندوز: مثبّت EXE + نسخة محمولة =================
+  windows-exe:
+    name: ويندوز EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: تثبيت الاعتماديات
+        run: npm ci
+
+      - name: بناء حزمة ويندوز (NSIS + Portable)
+        run: npm run dist:win
+        env:
+          # لا نشر تلقائي — البناء محلي داخل الـ Runner فقط
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: رفع ملفات EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: MontageStudio-Windows-EXE
+          path: |
+            release/*.exe
+            release/*.exe.blockmap
+          retention-days: 90
+
+  # ================= إصدار رسمي عند عمل Tag مثل v1.0.0 =================
+  publish-release:
+    name: نشر الإصدار
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [android-apk, windows-exe]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: إنشاء إصدار وإرفاق الملفات
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            MontageStudio-Android-APK/**/*.apk
+            MontageStudio-Windows-EXE/**/*.exe
+          generate_release_notes: true

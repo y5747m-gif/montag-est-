@@ -7,7 +7,14 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node tests/run.js"
+    "test": "node tests/run.js",
+    "build:web": "node scripts/prep-web.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "android:sync": "npm run build:web && cap sync android",
+    "apk:debug": "npm run android:sync && cd android && sh gradlew assembleDebug",
+    "apk:release": "npm run android:sync && cd android && sh gradlew assembleRelease",
+    "desktop": "electron .",
+    "dist:win": "electron-builder --win --publish never"
   },
   "engines": {
     "node": ">=18"
@@ -24,10 +31,18 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "jsdom": "^25.0.1"
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
+    "jsdom": "^25.0.1",
+    "sharp": "^0.35.4"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/y5747m-gif/montag-est-.git"
-  }
+  },
+  "main": "electron/main.cjs",
+  "author": "Montage Studio"
 }
