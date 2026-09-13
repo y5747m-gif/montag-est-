@@ -1,0 +1,33 @@
+{
+  "name": "montag-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Montage Studio — ستوديو المونتاج والموشن جرافيك في المتصفح (شبيه بـ Adobe After Effects): خط زمني، مفاتيح، تأثيرات، أقنعة، منحنيات، وتصدير فيديو/صور/صوت",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node tests/run.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "video-editor",
+    "motion-graphics",
+    "after-effects",
+    "timeline",
+    "keyframes",
+    "canvas",
+    "montage",
+    "arabic-ui"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/y5747m-gif/montag-est-.git"
+  }
+}

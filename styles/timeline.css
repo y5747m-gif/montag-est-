@@ -1,0 +1,168 @@
+/* ============================ الخط الزمني ============================ */
+:root {
+  --tl-head-w: 260px;
+  --tl-row-h: 30px;
+  --tl-ruler-h: 28px;
+  --tl-zoom: 14; /* بكسل لكل إطار */
+}
+
+.timeline-panel { flex: 1 1 0; min-height: 150px; }
+.timeline-body { display: flex; flex-direction: column; overflow: hidden; }
+.timeline-head {
+  display: grid; grid-template-columns: var(--tl-head-w) 1fr; height: var(--tl-ruler-h);
+  background: var(--bg-2); border-bottom: 1px solid var(--line); flex: 0 0 auto; position: relative;
+}
+.tl-corner {
+  display: flex; align-items: center; gap: 6px; padding: 0 8px; border-inline-end: 1px solid var(--line);
+  font-size: 11px; color: var(--txt-2); background: var(--bg-2);
+}
+.tl-ruler-wrap { position: relative; overflow: hidden; }
+#tl-ruler { display: block; height: var(--tl-ruler-h); cursor: pointer; }
+.timeline-main { display: grid; grid-template-columns: var(--tl-head-w) 1fr; flex: 1; min-height: 0; }
+.tl-layers { overflow: hidden auto; background: var(--bg-1); border-inline-end: 1px solid var(--line); }
+.tl-tracks-wrap { overflow: auto; position: relative; background: var(--bg-0); }
+.tl-tracks { position: relative; min-height: 100%; }
+.tl-row { position: relative; }
+.tl-row.layer-row { height: var(--tl-row-h); border-bottom: 1px solid rgba(255,255,255,.04); }
+.tl-row.prop-row-tl { height: 22px; background: var(--bg-1); border-bottom: 1px solid rgba(255,255,255,.03); }
+.tl-tracks .tl-row.layer-row { background: linear-gradient(90deg, rgba(255,255,255,.02), transparent 40%); }
+.tl-tracks .tl-row:nth-child(even).layer-row { background: rgba(255,255,255,.012); }
+
+/* رأس الطبقة */
+.layer-head {
+  display: flex; align-items: center; gap: 4px; height: var(--tl-row-h); padding: 0 6px;
+  border-bottom: 1px solid rgba(255,255,255,.04); font-size: 11.5px; position: relative;
+}
+.layer-head.selected { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.layer-head:hover { background: var(--bg-2); }
+.layer-head.selected:hover { background: var(--accent-soft); }
+.layer-head .color-chip { width: 6px; height: 20px; border-radius: 2px; flex: 0 0 auto; }
+.layer-head .num { font-family: var(--font-num); color: var(--txt-dim); font-size: 10px; width: 14px; text-align: center; }
+.layer-head .lyr-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layer-head .lyr-name input {
+  width: 100%; background: var(--bg-0); border: 1px solid var(--accent); border-radius: 3px; padding: 1px 3px;
+  font-size: 11.5px; outline: none;
+}
+.layer-head .toggle {
+  width: 15px; height: 15px; display: grid; place-items: center; background: transparent; border: 0;
+  color: var(--txt-dim); border-radius: 3px; flex: 0 0 auto;
+}
+.layer-head .toggle svg { width: 12px; height: 12px; }
+.layer-head .toggle:hover { background: var(--bg-3); color: var(--txt-0); }
+.layer-head .toggle.on { color: var(--txt-0); }
+.layer-head .toggle.solo.on { color: var(--amber); }
+.layer-head .toggle.shy.on { color: var(--violet); }
+.layer-head .parent-whip { width: 12px; height: 12px; border-radius: 3px; background: var(--bg-3); border: 1px solid var(--line); }
+.layer-head .parent-whip.set { background: var(--accent); border-color: var(--accent-2); }
+.layer-head .matte-select { width: 30px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 3px; font-size: 9.5px; padding: 0; }
+
+/* صفوف الخصائص داخل الخط الزمني */
+.tl-prop {
+  display: flex; align-items: center; gap: 4px; height: 22px; padding-inline-start: 22px; padding-inline-end: 6px;
+  font-size: 11px; color: var(--txt-2); border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.tl-prop:hover { background: var(--bg-2); }
+.tl-prop .tl-prop-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-prop .mini-value { font-family: var(--font-num); font-size: 10px; color: var(--txt-dim); }
+
+/* القصاصات (Clips) */
+.clip {
+  position: absolute; top: 6px; height: calc(var(--tl-row-h) - 12px); border-radius: 3px;
+  background: linear-gradient(180deg, #3d5a80, #2f4666); border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 1px 3px rgba(0,0,0,.4); overflow: hidden; cursor: default; min-width: 4px;
+}
+.clip.selected { border-color: #fff; box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(0,0,0,.5); }
+.clip .clip-label {
+  position: absolute; inset-inline-start: 4px; top: 1px; font-size: 10px; color: rgba(255,255,255,.92);
+  text-shadow: 0 1px 2px rgba(0,0,0,.8); pointer-events: none; white-space: nowrap; overflow: hidden;
+  max-width: calc(100% - 10px);
+}
+.clip video, .clip img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5; }
+.clip canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .75; }
+.clip .clip-edge { position: absolute; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.clip .clip-edge.start { inset-inline-start: 0; }
+.clip .clip-edge.end { inset-inline-end: 0; }
+.clip .clip-edge:hover { background: rgba(255,255,255,.35); }
+.clip .fade-handle { position: absolute; top: 0; width: 10px; height: 10px; background: rgba(255,255,255,.7); border-radius: 0 0 4px 4px; cursor: ew-resize; }
+.clip .fade-handle.in { inset-inline-start: 0; }
+.clip .fade-handle.out { inset-inline-end: 0; }
+.clip .clip-badge {
+  position: absolute; inset-inline-end: 3px; top: 1px; font-size: 9px; color: rgba(255,255,255,.75);
+  background: rgba(0,0,0,.35); border-radius: 3px; padding: 0 3px; pointer-events: none;
+}
+.clip.dragging { opacity: .85; }
+.clip.type-text { background: linear-gradient(180deg, #6b5a92, #4b3f68); }
+.clip.type-shape { background: linear-gradient(180deg, #8a6a3a, #634c28); }
+.clip.type-solid { background: linear-gradient(180deg, #4f6b52, #374c39); }
+.clip.type-adjustment { background: linear-gradient(180deg, #7a4a52, #57333a); }
+.clip.type-null { background: linear-gradient(180deg, #4a4f58, #34383f); }
+.clip.type-precomp { background: linear-gradient(180deg, #3d6b6b, #2a4c4c); }
+.clip.type-image { background: linear-gradient(180deg, #3f6480, #2b4659); }
+.clip.type-video, .clip.type-media { background: linear-gradient(180deg, #2f5a78, #1f3f56); }
+.clip.type-audio { background: linear-gradient(180deg, #2f6b58, #204a3d); }
+.clip.type-light { background: linear-gradient(180deg, #8a8034, #5f5822); }
+.clip.type-camera { background: linear-gradient(180deg, #5a5a6e, #3d3d4d); }
+.clip.type-particles { background: linear-gradient(180deg, #7a5a8a, #533d5f); }
+.clip.type-visualizer { background: linear-gradient(180deg, #2f7180, #1f4f5a); }
+.clip.hidden-layer { opacity: .35; }
+.layer-head .twirl-btn svg { transition: transform .15s; }
+.layer-head .twirl-btn.on svg, [dir=rtl] .layer-head .twirl-btn svg { transform: rotate(90deg); }
+[dir=rtl] .layer-head .twirl-btn.on svg { transform: rotate(0deg); }
+
+/* خط الزمن / المؤشر */
+.tl-playhead {
+  position: absolute; top: 0; bottom: 0; width: 1px; background: var(--amber); pointer-events: none; z-index: 12;
+}
+#tl-ruler-wrap .tl-playhead { z-index: 13; }
+.tl-playhead::before {
+  content: ''; position: absolute; top: 0; inset-inline-start: -6px; width: 13px; height: 11px;
+  background: var(--amber); clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.tl-grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.06); pointer-events: none; }
+.tl-workarea {
+  position: absolute; top: 0; height: var(--tl-ruler-h); background: rgba(74,157,255,.22);
+  border-inline: 1px solid var(--accent); pointer-events: none;
+}
+.tl-row .tl-workarea-tint { position: absolute; inset: 0 auto 0 0; background: rgba(0,0,0,.25); pointer-events: none; }
+.tl-marker { position: absolute; top: 0; width: 8px; height: 8px; margin-inline-start: -4px; background: var(--green); clip-path: polygon(50% 100%, 0 0, 100% 0); }
+.tl-selection-box { position: absolute; border: 1px solid var(--accent); background: rgba(74,157,255,.15); pointer-events: none; z-index: 11; }
+.tl-snap-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #fff; opacity: .8; pointer-events: none; z-index: 11; }
+
+/* المفاتيح */
+.kf {
+  position: absolute; width: 9px; height: 9px; margin-top: -4.5px; margin-inline-start: -4.5px;
+  background: var(--amber); transform: rotate(45deg); border: 1px solid #6d4a00; cursor: pointer; z-index: 6;
+}
+.kf.selected { background: #fff; border-color: var(--accent); }
+.kf.hold { border-radius: 1px; background: #ffd479; }
+.kf.ease { background: var(--cyan); border-color: #0b5c5c; }
+.kf.nav { position: static; margin: 0; }
+.kf-summary {
+  position: absolute; width: 7px; height: 7px; margin-top: -3.5px; margin-inline-start: -3.5px;
+  background: var(--txt-2); transform: rotate(45deg); opacity: .8; z-index: 5;
+}
+
+/* شريط التمرير السفلي */
+.tl-footer {
+  display: flex; align-items: center; gap: 8px; padding: 3px 8px; background: var(--bg-2);
+  border-top: 1px solid var(--line-soft); font-size: 11px; color: var(--txt-2); flex: 0 0 auto;
+}
+.tl-footer-left, .tl-footer-right { display: flex; align-items: center; gap: 6px; }
+.tl-info { font-family: var(--font-num); font-size: 10.5px; color: var(--txt-dim); }
+
+/* محرر المنحنيات */
+.graph-editor { position: absolute; inset: 0; background: var(--bg-0); display: flex; flex-direction: column; }
+.graph-editor[hidden] { display: none; }
+#graph-canvas { flex: 1; display: block; width: 100%; }
+.graph-toolbar {
+  display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: var(--bg-2);
+  border-top: 1px solid var(--line-soft); font-size: 11px; color: var(--txt-2);
+}
+.graph-toolbar .prop-chip {
+  background: var(--bg-3); border: 1px solid var(--line); border-radius: 10px; padding: 1px 8px; font-size: 10.5px;
+  color: var(--txt-1);
+}
+
+/* شريط معلومات الطبقة في الرأس */
+.tl-drop-line { position: absolute; height: 2px; background: var(--accent); z-index: 20; pointer-events: none; }
+.tl-row-drop-hint { box-shadow: inset 0 2px 0 var(--accent); }
