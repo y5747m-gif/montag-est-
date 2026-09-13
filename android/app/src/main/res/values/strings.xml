@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Montage Studio</string>
+    <string name="title_activity_main">Montage Studio</string>
+    <string name="package_name">com.montagestudio.app</string>
+    <string name="custom_url_scheme">com.montagestudio.app</string>
+</resources>

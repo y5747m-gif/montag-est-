@@ -487,3 +487,20 @@ body.zen .workspace { grid-template-columns: 1fr; }
 .grow { flex: 1; }
 .scroll-y { overflow-y: auto; min-height: 0; }
 .nowrap { white-space: nowrap; }
+
+/* ============ زر تحميل/تثبيت التطبيق (PWA) ============ */
+.install-btn { color: var(--accent); display: inline-flex; align-items: center; gap: 5px; }
+.install-btn svg { width: 15px; height: 15px; }
+.install-btn:hover { color: #7db4ff; }
+/* عندما يصبح التثبيت المباشر متاحًا: نبضة خفيفة للفت الانتباه */
+.install-btn.ready { color: #8fd0a8; }
+.install-btn.ready svg { animation: install-nudge 2.4s ease-in-out infinite; }
+@keyframes install-nudge {
+  0%, 70%, 100% { transform: translateY(0); }
+  80% { transform: translateY(2px); }
+  90% { transform: translateY(-1px); }
+}
+/* على الشاشات الصغيرة: أيقونة فقط ليبقى الشريط أنيقًا */
+@media (max-width: 860px) {
+  .install-btn span { display: none; }
+}

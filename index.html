@@ -4,6 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Montage Studio — استوديو المونتاج والموشن جرافيك</title>
+<!-- PWA: يُثبَّت الموقع كتطبيق على الهاتف ويعمل بلا اتصال -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#14161a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="مونتاج ستوديو" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="styles/app.css" />
 <link rel="stylesheet" href="styles/timeline.css" />
@@ -15,6 +23,7 @@
 <svg id="icon-sprite" aria-hidden="true" style="display:none">
   <defs>
     <symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.6L10.6 20z"/></symbol>
+    <symbol id="i-install" viewBox="0 0 24 24"><path d="M12 3v11m0 0l-4.2-4.2M12 14l4.2-4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17.5v1A2.5 2.5 0 007.5 21h9a2.5 2.5 0 002.5-2.5v-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-hand" viewBox="0 0 24 24"><path d="M7 11V5.5a1.5 1.5 0 013 0V11m0-1V4.5a1.5 1.5 0 013 0V11m0-1.5a1.5 1.5 0 013 0V13m0-2a1.5 1.5 0 013 0v4.2c0 3.2-2.2 5.8-5.6 5.8h-1c-2 0-3.3-.7-4.4-2.2L4.4 15c-.6-1-.4-2 .5-2.5.8-.4 1.6-.2 2.2.5L8 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
     <symbol id="i-zoom" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15 15l5.5 5.5M8 10.5h5M10.5 8v5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
     <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 12a8 8 0 11-3-6.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20 3v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
@@ -100,6 +109,7 @@
       <button class="tb-btn ghost" id="btn-undo" data-i18n-title="undo" title="تراجع (Ctrl+Z)"><svg><use href="#i-undo"/></svg></button>
       <button class="tb-btn ghost" id="btn-redo" data-i18n-title="redo" title="إعادة (Ctrl+Shift+Z)"><svg><use href="#i-redo"/></svg></button>
       <span class="sep"></span>
+      <button class="tb-btn ghost install-btn" id="btn-install" data-i18n-title="installAppTitle" title="تحميل التطبيق على هذا الجهاز"><svg><use href="#i-install"/></svg><span data-i18n="installApp">تحميل</span></button>
       <button class="tb-btn ghost" id="btn-lang" title="تغيير اللغة / Switch language"><span id="lang-label">EN</span></button>
       <button class="tb-btn ghost" id="btn-help" title="اختصارات لوحة المفاتيح"><svg><use href="#i-settings"/></svg></button>
       <button class="btn primary" id="btn-export"><svg><use href="#i-export"/></svg><span data-i18n="render">تصدير</span></button>

@@ -1,0 +1,39 @@
+# إعداد حزمة ويندوز — Montage Studio (electron-builder)
+appId: com.montagestudio.app
+productName: Montage Studio
+copyright: Copyright © Montage Studio
+
+directories:
+  output: release
+
+# نُضمّن ملفات التطبيق فقط — لا اختبارات ولا أدوات بناء ولا node_modules
+files:
+  - index.html
+  - src/**
+  - styles/**
+  - assets/**
+  - electron/**
+  - package.json
+
+asar: true
+compression: maximum   # أصغر حجم ممكن للمثبّت
+
+win:
+  icon: assets/icon.png
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Montage Studio
+  artifactName: ${productName}-Setup-${version}.${ext}
+
+portable:
+  artifactName: ${productName}-Portable-${version}.${ext}
