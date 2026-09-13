@@ -32,6 +32,28 @@ const round = (buf, size) => {
 await sharp(base).resize(512, 512).png({ compressionLevel: 9 }).toFile(path.join(ROOT, 'assets', 'icon.png'));
 console.log('✓ assets/icon.png (512×512)');
 
+/* ---------- 1ب) أيقونات PWA — تثبيت الموقع كتطبيق على الهاتف ---------- */
+const ASSETS = path.join(ROOT, 'assets');
+const pwaIcon = async (name, size, pad = 0) => {
+  if (!pad) {
+    await sharp(base).resize(size, size).png({ compressionLevel: 9 }).toFile(path.join(ASSETS, name));
+  } else {
+    // أيقونة تكيّفية (maskable): المحتوى داخل ~78% والباقي من لون الخلفية
+    const inner = Math.round(size * (1 - pad));
+    const icon = await sharp(base).resize(inner, inner).png().toBuffer();
+    await sharp({ create: { width: size, height: size, channels: 4, background: BG_COLOR } })
+      .composite([{ input: icon, gravity: 'center' }])
+      .png({ compressionLevel: 9 })
+      .toFile(path.join(ASSETS, name));
+  }
+  console.log(`✓ assets/${name} (${size}×${size})`);
+};
+await pwaIcon('icon-192.png', 192);
+await pwaIcon('icon-512.png', 512);
+await pwaIcon('icon-maskable-192.png', 192, 0.22);
+await pwaIcon('icon-maskable-512.png', 512, 0.22);
+await pwaIcon('apple-touch-icon.png', 180);
+
 /* ---------- 2) أيقونات أندرويد ---------- */
 if (!fs.existsSync(RES)) {
   console.warn('⚠ مجلد android غير موجود — نفّذ: npx cap add android ثم أعد تشغيل npm run icons');

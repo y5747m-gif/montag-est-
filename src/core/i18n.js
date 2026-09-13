@@ -21,6 +21,13 @@ const DICT = {
     scale: 'المقياس', rotation: 'الدوران', anchor: 'نقطة الارتكاز', skew: 'الانحراف', volume: 'مستوى الصوت',
     shape: 'الشكل', fill: 'الملء', stroke: 'الحدود', strokeWidth: 'سماكة الحدود', masks: 'الأقنعة',
     ready: 'جاهز', playing: 'تشغيل', rendering: 'جارٍ التصدير', name: 'الاسم',
+    installApp: 'تحميل', installAppTitle: 'تحميل التطبيق على هذا الجهاز', installDialogTitle: 'تحميل التطبيق',
+    installDone: 'تم التثبيت — ستجد التطبيق على شاشتك الرئيسية ✓',
+    installedAlready: 'التطبيق مثبّت ويعمل على هذا الجهاز ✓',
+    installIOSHow: 'على iPhone / iPad:<br>١) اضغط زر <b>مشاركة</b> (المربّع بسهم لأعلى) في أسفل المتصفح.<br>٢) اختر <b>«إضافة إلى الشاشة الرئيسية»</b>.<br>٣) اضغط <b>إضافة</b> — سيظهر التطبيق بأيقونته ويعمل بلا اتصال.',
+    installAndroidHow: 'للتثبيت كتطبيق: من قائمة المتصفح <b>(⋮)</b> اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.<br>أو نزّل <b>نسخة أندرويد APK</b> مباشرة:',
+    installDesktopHow: 'على الهاتف: افتح هذا الموقع في المتصفح ثم اضغط <b>«تثبيت التطبيق»</b> من نافذة المتصفح.<br>على الحاسوب: ثبّته من أيقونة التثبيت في شريط العنوان، أو نزّل النسخ الجاهزة:',
+    getApk: 'تنزيل APK لأندرويد', getExe: 'تنزيل نسخة ويندوز (EXE)',
   },
   en: {
     file: 'File', edit: 'Edit', composition: 'Composition', layer: 'Layer', effect: 'Effect', animation: 'Animation',
@@ -41,6 +48,13 @@ const DICT = {
     scale: 'Scale', rotation: 'Rotation', anchor: 'Anchor point', skew: 'Skew', volume: 'Audio level',
     shape: 'Shape', fill: 'Fill', stroke: 'Stroke', strokeWidth: 'Stroke width', masks: 'Masks',
     ready: 'Ready', playing: 'Playing', rendering: 'Rendering', name: 'Name',
+    installApp: 'Install', installAppTitle: 'Install the app on this device', installDialogTitle: 'Install App',
+    installDone: 'Installed — find it on your home screen ✓',
+    installedAlready: 'The app is already installed on this device ✓',
+    installIOSHow: 'On iPhone / iPad:<br>1) Tap the <b>Share</b> button (square with an arrow) in the browser.<br>2) Choose <b>«Add to Home Screen»</b>.<br>3) Tap <b>Add</b> — the app appears with its icon and works offline.',
+    installAndroidHow: 'To install as an app: open the browser menu <b>(⋮)</b> and choose <b>«Install app»</b> or <b>«Add to Home screen»</b>.<br>Or download the <b>Android APK</b> directly:',
+    installDesktopHow: 'On a phone: open this site in the browser and tap <b>«Install app»</b> from the browser prompt.<br>On desktop: install it from the address-bar icon, or download the ready builds:',
+    getApk: 'Download Android APK', getExe: 'Download Windows (EXE)',
   },
 };
 

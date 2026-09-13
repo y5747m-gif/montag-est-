@@ -21,6 +21,7 @@ import { toastOk, toastWarn, toastErr } from './ui/toast.js';
 import { applyI18n, setLang, getLang } from './core/i18n.js';
 import { el, clear, icon } from './ui/dom.js';
 import { clamp, framesToTimecode, timecodeToFrames, downloadBlob } from './core/util.js';
+import { initPWA } from './core/pwa.js';
 
 const VIEWER_ZOOMS = [['fit', 'ملء'], ['0.25', '25%'], ['0.5', '50%'], ['1', '100%'], ['2', '200%'], ['4', '400%']];
 const VIEWER_RES = [['1', 'كاملة'], ['0.5', 'نصف (افتراضي)'], ['0.33', 'ثلث'], ['0.25', 'ربع (أسرع)']];
@@ -178,6 +179,7 @@ class App {
     document.getElementById('btn-export')?.addEventListener('click', () => this.exportDialog());
     document.getElementById('btn-help')?.addEventListener('click', () => this.showShortcuts());
     document.getElementById('btn-lang')?.addEventListener('click', () => this.toggleLang());
+    initPWA(); // تسجيل عامل الخدمة + زر «تحميل التطبيق» (PWA / APK / EXE)
     document.getElementById('btn-panel-menu')?.addEventListener('click', (e) => this.panelMenu(e));
     document.getElementById('btn-props-menu')?.addEventListener('click', (e) => this.propsMenu(e));
     document.getElementById('tl-columns-btn')?.addEventListener('click', (e) => this.panelMenu(e));

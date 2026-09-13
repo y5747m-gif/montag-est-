@@ -1,0 +1,45 @@
+name: نشر الموقع (GitHub Pages)
+
+# ينشر التطبيق كموقع مباشر يُثبَّت على الهاتف كتطبيق (PWA).
+# خطوة واحدة مطلوبة من مالك المستودع (مرة واحدة فقط):
+#   Settings → Pages → Build and deployment → Source = «GitHub Actions»
+# بعدها يعمل الموقع تلقائيًا مع كل دفع على: https://y5747m-gif.github.io/montag-est-/
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: نشر التطبيق كموقع
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - name: تجهيز ملفات الموقع
+        run: |
+          mkdir _site
+          cp index.html manifest.webmanifest sw.js _site/
+          cp -r src styles assets _site/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: النشر
+        id: deployment
+        uses: actions/deploy-pages@v4
