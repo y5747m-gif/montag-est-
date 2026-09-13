@@ -332,6 +332,13 @@ async function appTests() {
   ok(okLoad, 'استعادة المشروع من JSON');
   ok(store.comp.layers.length > 0, 'الطبقات موجودة بعد الاستعادة');
 
+  // الحفظ التلقائي واستعادته (localStorage)
+  store.persistLocal();
+  const restored = new (await load('src/core/store.js')).Store();
+  restored.media = app.media;
+  ok(restored.loadLocal(), 'استعادة الجلسة المحفوظة تلقائيًا');
+  ok(restored.comp.layers.length > 0, 'طبقات الجلسة المستعادة موجودة');
+
   section('مساحات العمل واللغة');
   app.setWorkspace('animation');
   ok(app.workspace === 'animation', 'مساحة عمل التحريك');
