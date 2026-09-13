@@ -21,6 +21,8 @@ concurrency:
 jobs:
   deploy:
     name: نشر التطبيق كموقع
+    # لا يُعتبر فشلًا إن لم تُفعَّل Pages بعد — ينشر تلقائيًا فور تفعيلها
+    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
