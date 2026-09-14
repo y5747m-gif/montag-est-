@@ -32,7 +32,7 @@
     .msi-sheet{background:#1d1435;color:#f5f2fc;font-family:Cairo,Tajawal,"Segoe UI",system-ui,sans-serif;border-radius:22px 22px 0 0;border-top:1px solid rgba(255,255,255,.1);max-width:430px;width:100%;padding:18px 20px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(40px);transition:transform .28s cubic-bezier(.3,.9,.3,1);box-shadow:0 -18px 50px rgba(0,0,0,.5)}
     .msi-backdrop.in .msi-sheet{transform:none}
     .msi-title{display:flex;align-items:center;gap:10px;font-size:15.5px;font-weight:800;margin-bottom:6px}
-    .msi-logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:grid;place-items:center;font-weight:800;font-size:19px;color:#fff;flex:0 0 auto}
+    .msi-logo{width:40px;height:40px;display:grid;place-items:center;flex:0 0 auto}.msi-logo img{width:40px;height:40px;display:block;filter:drop-shadow(0 6px 16px rgba(139,92,246,.45))}
     .msi-sub{font-size:12px;color:#b3a8d4;line-height:1.7;margin:0 0 14px}
     .msi-steps{list-style:none;margin:0;padding:0;counter-reset:msi}
     .msi-steps li{display:flex;gap:11px;align-items:flex-start;padding:9px 0;font-size:13px;line-height:1.7;color:#e6e0f5}
@@ -53,7 +53,7 @@
     backdrop.id = 'msi-backdrop';
     backdrop.innerHTML = `
       <div class="msi-sheet" role="dialog" aria-modal="true" aria-label="${title}">
-        <div class="msi-title"><span class="msi-logo">M</span><span>${title}</span></div>
+        <div class="msi-title"><span class="msi-logo"><img src="assets/icon-192.png" alt="" width="40" height="40" /></span><span>${title}</span></div>
         <p class="msi-sub">${subtitle}</p>
         <ol class="msi-steps">${steps.map((s) => `<li>${s}</li>`).join('')}</ol>
         <div class="msi-actions">

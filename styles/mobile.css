@@ -78,16 +78,11 @@ svg use { pointer-events: none; }
 .m-brand-mark {
   width: 34px;
   height: 34px;
-  border-radius: 11px;
-  background: var(--m-grad);
   display: grid;
   place-items: center;
-  font-weight: 800;
-  font-size: 17px;
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.45);
   flex: 0 0 auto;
 }
+.m-brand-mark img { width: 34px; height: 34px; display: block; filter: drop-shadow(0 6px 14px rgba(139, 92, 246, 0.45)); }
 .m-brand-name {
   display: flex;
   flex-direction: column;
@@ -610,16 +605,11 @@ svg use { pointer-events: none; }
   width: 76px;
   height: 76px;
   margin: 0 auto 16px;
-  border-radius: 24px;
-  background: var(--m-grad);
   display: grid;
   place-items: center;
-  font-size: 38px;
-  font-weight: 800;
-  color: #fff;
-  box-shadow: 0 18px 50px rgba(139, 92, 246, 0.5);
   animation: m-pulse 1.6s ease infinite;
 }
+.m-boot-logo img { width: 76px; height: 76px; display: block; filter: drop-shadow(0 18px 40px rgba(139, 92, 246, 0.5)); }
 .m-boot-card h1 { font-size: 19px; margin: 0 0 4px; }
 .m-boot-card p { font-size: 12px; color: var(--m-txt-2); margin: 0 0 18px; }
 .m-boot-bar { width: 190px; height: 6px; margin: 0 auto; border-radius: 99px; background: rgba(255,255,255,0.1); overflow: hidden; }

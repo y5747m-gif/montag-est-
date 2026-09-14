@@ -3,7 +3,7 @@
  * يعمل بلا إنترنت: يخزّن ملفات النسختين (الهاتف/الكمبيوتر) وصفحة التحميل مسبقًا،
  * ثم يقدّمها من الذاكرة مع تحديث في الخلفية (stale-while-revalidate).
  */
-const VERSION = 'ms-v1';
+const VERSION = 'ms-v2';
 const PRECACHE = [
   './',
   'index.html',
@@ -47,6 +47,7 @@ const PRECACHE = [
   'assets/icon-192.png',
   'assets/icon-512.png',
   'assets/icon-maskable-512.png',
+  'assets/icon-apple-180.png',
 ];
 
 self.addEventListener('install', (event) => {
