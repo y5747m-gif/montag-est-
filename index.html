@@ -328,6 +328,87 @@
     padding: 5px 12px;
   }
 
+  /* ============================ الحركات والأنيميشن ============================ */
+  @keyframes topbar-in { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes fade-up { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+    50% { transform: translateY(-13px) rotate(var(--rot, 0deg)); }
+  }
+  @keyframes glow-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(42px, -32px) scale(1.14); }
+    100% { transform: translate(-34px, 28px) scale(0.94); }
+  }
+  @keyframes sheen-sweep { 0% { left: -70%; } 55%, 100% { left: 135%; } }
+  @keyframes bounce-soft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes twinkle { 0%, 100% { opacity: 0.25; transform: translateY(0) scale(0.85); } 50% { opacity: 0.9; transform: translateY(-8px) scale(1.15); } }
+  @keyframes pulse-glow-p { 0%, 100% { box-shadow: 0 12px 34px rgba(236, 72, 153, 0.4); } 50% { box-shadow: 0 16px 48px rgba(236, 72, 153, 0.62); } }
+  @keyframes pulse-glow-b { 0%, 100% { box-shadow: 0 12px 34px rgba(74, 157, 255, 0.35); } 50% { box-shadow: 0 16px 48px rgba(74, 157, 255, 0.55); } }
+
+  .topbar { animation: topbar-in 0.55s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+  .hero .pill { animation: fade-up 0.6s 0.1s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+  .hero h1 { animation: fade-up 0.7s 0.22s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+  .hero p.sub { animation: fade-up 0.7s 0.38s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+  .detect.show { animation: fade-up 0.5s 0.55s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+
+  /* طفو الجهازين */
+  .phone-body { animation: float-y 6s ease-in-out infinite; }
+  .device-laptop { animation: float-y 7.5s ease-in-out 1s infinite; }
+  .vc-icon { animation: bounce-soft 3.6s ease-in-out infinite; }
+  .pc-card .vc-icon { animation-delay: 0.6s; }
+
+  /* انجراف الهالات الضوئية */
+  .glow.g1 { animation: glow-drift 16s ease-in-out infinite alternate; }
+  .glow.g2 { animation: glow-drift 20s ease-in-out -6s infinite alternate; }
+  .glow.g3 { animation: glow-drift 24s ease-in-out -12s infinite alternate; }
+
+  /* أزرار التحميل: لمعة متحركة + توهّج نابض + ارتفاع عند التحويم */
+  .dl-btn { position: relative; overflow: hidden; transition: transform 0.2s, filter 0.2s, box-shadow 0.3s; }
+  .dl-btn::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    width: 45%;
+    left: -70%;
+    background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+    transform: skewX(-18deg);
+    animation: sheen-sweep 3.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .dl-btn:hover { transform: translateY(-3px); }
+  .dl-btn.phone-btn-grad { animation: pulse-glow-p 2.8s ease-in-out infinite; }
+  .dl-btn.pc-btn-grad { animation: pulse-glow-b 3.2s ease-in-out infinite; }
+
+  /* ظهور تدريجي عند التمرير (يُفعَّل عبر JS) */
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s cubic-bezier(0.22, 0.9, 0.3, 1), transform 0.7s cubic-bezier(0.22, 0.9, 0.3, 1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* تفاعلات البطاقات والشعار */
+  .feature { transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; }
+  .feature:hover { transform: translateY(-6px); border-color: rgba(139, 92, 246, 0.5); box-shadow: 0 18px 40px rgba(139, 92, 246, 0.14); }
+  .brand-mark { transition: transform 0.3s cubic-bezier(0.22, 0.9, 0.3, 1); }
+  .brand-mark:hover { transform: rotate(-10deg) scale(1.08); }
+
+  /* أشكال عائمة في الخلفية */
+  .floaties { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .fy { position: absolute; display: block; opacity: 0.32; animation: float-y var(--d, 7s) ease-in-out infinite; }
+  .f-ring { width: 26px; height: 26px; border: 3px solid rgba(139, 92, 246, 0.75); border-radius: 50%; top: 17%; left: 7%; --d: 7s; }
+  .f-ring.r2 { width: 15px; height: 15px; border-width: 2px; border-color: rgba(34, 211, 238, 0.75); top: 63%; left: 4%; animation-duration: 9s; animation-delay: -3s; }
+  .f-plus { width: 20px; height: 20px; top: 29%; right: 6%; --d: 8s; animation-delay: -2s; }
+  .f-plus::before, .f-plus::after { content: ""; position: absolute; background: rgba(236, 72, 153, 0.85); border-radius: 2px; }
+  .f-plus::before { left: 50%; top: 0; bottom: 0; width: 3px; transform: translateX(-50%); }
+  .f-plus::after { top: 50%; left: 0; right: 0; height: 3px; transform: translateY(-50%); }
+  .f-plus.p2 { right: auto; left: 13%; top: 78%; --d: 10s; animation-delay: -5s; }
+  .f-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 212, 121, 0.9); top: 12%; right: 19%; animation-name: twinkle; animation-duration: 4.5s; }
+  .f-tri { width: 0; height: 0; border-inline: 10px solid transparent; border-bottom: 17px solid rgba(74, 157, 255, 0.75); top: 47%; right: 11%; --d: 9s; animation-delay: -4s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+
   /* ============================ المميزات ============================ */
   .features {
     display: grid;
@@ -362,6 +443,16 @@
 <div class="glow g1"></div>
 <div class="glow g2"></div>
 <div class="glow g3"></div>
+
+<!-- أشكال عائمة في الخلفية -->
+<div class="floaties" aria-hidden="true">
+  <span class="fy f-ring"></span>
+  <span class="fy f-ring r2"></span>
+  <span class="fy f-plus"></span>
+  <span class="fy f-plus p2"></span>
+  <span class="fy f-dot"></span>
+  <span class="fy f-tri"></span>
+</div>
 
 <div class="page">
 
@@ -399,7 +490,7 @@
   <section class="versions" id="versions">
 
     <!-- واجهة الهاتف داخل إطار هاتف -->
-    <div class="version-card phone-card">
+    <div class="version-card phone-card" data-reveal>
       <div class="vc-head">
         <div class="vc-icon">📱</div>
         <h2>نسخة الهاتف</h2>
@@ -434,7 +525,7 @@
     </div>
 
     <!-- واجهة الكمبيوتر داخل إطار حاسوب -->
-    <div class="version-card pc-card">
+    <div class="version-card pc-card" data-reveal>
       <div class="vc-head">
         <div class="vc-icon">🖥️</div>
         <h2>نسخة الكمبيوتر</h2>
@@ -468,10 +559,10 @@
 
   <!-- ============ المميزات المشتركة ============ -->
   <section class="features">
-    <div class="feature"><div class="f-ico">🎬</div><b>13 نوع طبقة</b><span>نص، أشكال، فيديو، صوت، جزيئات، ضبط، كاميرا وإضاءة</span></div>
-    <div class="feature"><div class="f-ico">✨</div><b>43 تأثيرًا</b><span>تمويه، ألوان، تشويه، توهّج، انتقالات وحبيبات فيلم</span></div>
-    <div class="feature"><div class="f-ico">🎞️</div><b>مفاتيح ومنحنيات</b><span>تحريك كامل بأسلوب After Effects مع محرر سهولة</span></div>
-    <div class="feature"><div class="f-ico">📦</div><b>تصدير متعدد</b><span>فيديو WebM، سلسلة PNG، APNG، صوت WAV ومشروع JSON</span></div>
+    <div class="feature" data-reveal><div class="f-ico">🎬</div><b>13 نوع طبقة</b><span>نص، أشكال، فيديو، صوت، جزيئات، ضبط، كاميرا وإضاءة</span></div>
+    <div class="feature" data-reveal><div class="f-ico">✨</div><b>43 تأثيرًا</b><span>تمويه، ألوان، تشويه، توهّج، انتقالات وحبيبات فيلم</span></div>
+    <div class="feature" data-reveal><div class="f-ico">🎞️</div><b>مفاتيح ومنحنيات</b><span>تحريك كامل بأسلوب After Effects مع محرر سهولة</span></div>
+    <div class="feature" data-reveal><div class="f-ico">📦</div><b>تصدير متعدد</b><span>فيديو WebM، سلسلة PNG، APNG، صوت WAV ومشروع JSON</span></div>
   </section>
 
   <footer>
@@ -486,6 +577,25 @@
     const isCoarse = window.matchMedia('(pointer: coarse)').matches;
     const isNarrow = Math.min(window.innerWidth || 9999, window.screen?.width || 9999) < 820;
     if (isCoarse && isNarrow) document.getElementById('detect-banner').classList.add('show');
+  } catch (e) { /* تجاهل */ }
+
+  // ظهور تدريجي للبطاقات عند التمرير
+  try {
+    const revealEls = [...document.querySelectorAll('[data-reveal]')];
+    revealEls.forEach((elm, i) => {
+      elm.classList.add('reveal');
+      elm.style.transitionDelay = `${(i % 4) * 80}ms`;
+    });
+    if ('IntersectionObserver' in window) {
+      const rio = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) { en.target.classList.add('in'); rio.unobserve(en.target); }
+        });
+      }, { threshold: 0.12 });
+      revealEls.forEach((elm) => rio.observe(elm));
+    } else {
+      revealEls.forEach((elm) => elm.classList.add('in'));
+    }
   } catch (e) { /* تجاهل */ }
 
   // ملاءمة دقيقة للمعاينات الحية داخل إطاري الهاتف والحاسوب

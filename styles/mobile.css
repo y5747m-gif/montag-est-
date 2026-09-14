@@ -639,3 +639,75 @@ svg use { pointer-events: none; }
   }
   .m-nav { max-width: 520px; }
 }
+
+/* ==========================================================================
+   الحركات — دخول ناعم، نبض، وطفو خفيف
+   ========================================================================== */
+@keyframes m-tab-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes m-sheet-in {
+  from { transform: translateY(70px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes m-nav-in {
+  from { transform: translateY(80px); }
+  to { transform: translateY(0); }
+}
+@keyframes m-ring-pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.85); opacity: 0; }
+}
+@keyframes m-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes m-glow-breathe {
+  0%, 100% { opacity: 0.14; }
+  50% { opacity: 0.3; }
+}
+
+/* دخول الهيكل عند الإقلاع */
+.m-topbar { animation: m-tab-in 0.45s cubic-bezier(0.3, 0.9, 0.3, 1) both; }
+.m-stage { animation: m-tab-in 0.5s 0.08s cubic-bezier(0.3, 0.9, 0.3, 1) both; }
+.m-sheet { animation: m-sheet-in 0.55s cubic-bezier(0.3, 0.9, 0.3, 1) 0.14s both; }
+.m-nav { animation: m-nav-in 0.5s cubic-bezier(0.3, 0.9, 0.3, 1) 0.2s both; }
+
+/* نبضة حول زر التشغيل العائم */
+.m-playfab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(236, 72, 153, 0.65);
+  animation: m-ring-pulse 2s ease-out 1.2s infinite;
+  pointer-events: none;
+}
+.m-app.is-playing .m-playfab::after { animation: none; opacity: 0; }
+
+/* ظهور محتوى التبويبات والصفوف عند كل تبديل/إعادة بناء */
+.m-tabbody { animation: m-tab-in 0.26s ease; }
+.m-layer-row, .m-fx-item, .m-quick, .m-asset, .m-prop-card, .m-import-card { animation: m-tab-in 0.24s ease both; }
+
+/* طفو خفيف لعلامة المعاينة ونبض الخلفية */
+.m-stage-badge { animation: m-float 5s ease-in-out infinite; }
+.m-app::before {
+  content: "";
+  position: fixed;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  top: -120px;
+  inset-inline-end: -120px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.5), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: m-glow-breathe 6s ease-in-out infinite;
+}
+
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
