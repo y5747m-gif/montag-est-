@@ -183,6 +183,11 @@ class MobileApp {
     store.on('change', () => { this.renderAll(); this.queueRender(); });
     store.on('history', () => this.updateHistoryButtons());
     store.on('playing', (v) => this.updatePlayUI(v));
+    // نتائج الحفظ عبر جسر أندرويد الأصلي (داخل APK)
+    document.addEventListener('ms:file-saved', (e) => {
+      if (e.detail?.ok) toastOk(`حُفظ «${e.detail.name}» في مجلد التنزيلات`);
+      else toastErr(`تعذّر حفظ «${e.detail?.name || 'الملف'}»`);
+    });
   }
 
   /* ============================ أدوات عامة ============================ */
@@ -386,13 +391,22 @@ class MobileApp {
       el('div', { class: 'm-quick-grid' }, [
         el('button', {
           class: 'm-quick',
+          title: 'تنزيل ملف APK للتثبيت الدائم',
           onclick: () => {
-            const api = window.MS_INSTALL;
-            if (api?.isInstalled?.()) toastOk('التطبيق مثبت بالفعل على هاتفك ✓');
-            else if (api) api.promptInstall();
-            else toastWarn('التثبيت غير مدعوم في هذا المتصفح — استخدم قائمة المتصفح «إضافة إلى الشاشة الرئيسية»');
+            if (window.AndroidBridge) {
+              // داخل التطبيق: افتح رابط التنزيل في المتصفح النظامي
+              window.location.href = 'download/apk';
+            } else {
+              const a = document.createElement('a');
+              a.href = 'download/apk';
+              a.download = 'MontageStudio.apk';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              toastOk('جارٍ تنزيل ملف APK — ثبّته من التنزيلات');
+            }
           },
-        }, [icon('i-phone', 22), el('span', { text: 'ثبّت كتطبيق' })]),
+        }, [icon('i-phone', 22), el('span', { text: 'تنزيل APK' })]),
         el('button', {
           class: 'm-quick',
           onclick: () => { this.store.saveToFile(); toastOk('تم حفظ المشروع'); },

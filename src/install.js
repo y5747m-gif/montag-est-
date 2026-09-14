@@ -1,12 +1,12 @@
 /**
- * التثبيت كتطبيق (PWA) — مشترك بين صفحة التحميل ونسخة الهاتف
+ * التنزيل والتثبيت — مشترك بين صفحة التحميل ونسخة الهاتف
  *
- * عند الضغط على زرّي التنزيل في صفحة التحميل:
- *  - أندرويد/كروم: يظهر مربع حوار التثبيت الرسمي فيُثبَّت التطبيق على الهاتف بأيقونته.
- *  - آيفون/آيباد: تظهر نافذة إرشادية بخطوات "إضافة إلى الشاشة الرئيسية".
- *  - أجهزة الكمبيوتر: الانتقال إلى النسخة كما هو متوقع (وتثبيتها ممكن من شريط المتصفح).
+ * زر «تثبيت نسخة الهاتف»: ينزّل ملف APK مباشرةً كأي تطبيق هاتف عادي،
+ * ويعرض خطوات التثبيت (السماح بالمصادر غير المعروفة مرة واحدة).
+ * زر «تحميل نسخة الكمبيوتر»: ينزّل ملف EXE مباشرة.
+ * يبقى التثبيت المباشر (PWA) متاحًا برمجيًا عبر window.MS_INSTALL.
  *
- * الواجهة العامة: window.MS_INSTALL = { promptInstall(), isInstalled(), canPrompt() }
+ * الواجهة: window.MS_INSTALL = { promptInstall(), isInstalled(), canPrompt() }
  */
 (() => {
   'use strict';
@@ -43,7 +43,7 @@
     .msi-btn.primary{background:linear-gradient(135deg,#8b5cf6,#ec4899);border:0;box-shadow:0 8px 22px rgba(236,72,153,.35)}
   `;
 
-  function showGuide({ title, subtitle, steps, actionLabel, actionHref, onClose }) {
+  function showGuide({ title, subtitle, steps = [], actionLabel = 'فهمت', actionHref, onClose }) {
     if (document.getElementById('msi-backdrop')) return;
     const style = document.createElement('style');
     style.textContent = STYLE;
@@ -58,7 +58,7 @@
         <ol class="msi-steps">${steps.map((s) => `<li>${s}</li>`).join('')}</ol>
         <div class="msi-actions">
           <button class="msi-btn" data-msi-close>لاحقًا</button>
-          ${actionHref ? `<a class="msi-btn primary" href="${actionHref}">${actionLabel}</a>` : `<button class="msi-btn primary" data-msi-close>${actionLabel || 'فهمت'}</button>`}
+          ${actionHref ? `<a class="msi-btn primary" href="${actionHref}">${actionLabel}</a>` : `<button class="msi-btn primary" data-msi-close>${actionLabel}</button>`}
         </div>
       </div>`;
     const close = () => {
@@ -73,20 +73,9 @@
     requestAnimationFrame(() => backdrop.classList.add('in'));
   }
 
-  const IOS_STEPS = [
-    'افتح هذه الصفحة في متصفح <b>Safari</b>',
-    'اضغط أيقونة <b>المشاركة</b> ▲ (المربع مع السهم في الشريط السفلي)',
-    'اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ثم اضغط <b>إضافة</b>',
-  ];
-  const ANDROID_STEPS = [
-    'افتح قائمة المتصفح <b>⋮</b> أعلى الشاشة',
-    'اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>',
-    'سيظهر تطبيق <b>Montage</b> بأيقونته على هاتفك ويعمل بلا إنترنت',
-  ];
-
-  /* ------------------------------ منطق التثبيت ------------------------------ */
+  /* ------------------------------ التثبيت المباشر (PWA) — يبقى متاحًا برمجيًا ------------------------------ */
   window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // نستولي على الحوار لعرضه عند الضغط على زرنا
+    e.preventDefault();
     deferredPrompt = e;
     document.dispatchEvent(new CustomEvent('ms:installavailable'));
   });
@@ -101,8 +90,8 @@
     if (installed || isStandalone()) {
       showGuide({
         title: 'التطبيق مثبت بالفعل',
-        subtitle: 'ستجد Montage Studio على شاشتك الرئيسية بأيقونته — يعمل دون اتصال بالإنترنت.',
-        steps: ['ابحث عن أيقونة <b>M</b> البنفسجية بين تطبيقاتك', 'افتحها وابدأ المونتاج مباشرة'],
+        subtitle: 'ستجد Montage Studio على شاشتك الرئيسية بأيقونته.',
+        steps: ['ابحث عن أيقونة <b>M</b> البنفسجية بين تطبيقاتك'],
         actionLabel: 'رائع',
       });
       return 'installed';
@@ -111,109 +100,66 @@
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
       deferredPrompt = null;
-      if (outcome === 'accepted') return 'accepted';
-      return 'dismissed';
+      return outcome === 'accepted' ? 'accepted' : 'dismissed';
     }
-    // لا يوجد حوار رسمي (iOS أو متصفح بلا دعم) → إرشاد يدوي
+    // iOS أو متصفح بلا دعم: إرشاد «إضافة إلى الشاشة الرئيسية»
+    const iosSteps = [
+      'افتح هذه الصفحة في متصفح <b>Safari</b>',
+      'اضغط أيقونة <b>المشاركة</b> ▲ في الشريط السفلي',
+      'اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ثم اضغط <b>إضافة</b>',
+    ];
+    const androidSteps = [
+      'افتح قائمة المتصفح <b>⋮</b>',
+      'اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>',
+    ];
     showGuide({
-      title: 'ثبّت Montage على هاتفك',
-      subtitle: 'أضف التطبيق إلى شاشتك الرئيسية بخطوات بسيطة — سيعمل بعدها كأي تطبيق وبلا إنترنت:',
-      steps: isIOS() ? IOS_STEPS : ANDROID_STEPS,
+      title: 'تثبيت نسخة الويب',
+      subtitle: 'أضف التطبيق إلى شاشتك الرئيسية (نسخة خفيفة تعمل من المتصفح):',
+      steps: isIOS() ? iosSteps : androidSteps,
       actionLabel: 'فهمت',
-      onClose: () => {},
     });
     return 'guide';
   }
 
-  /* ------------------------------ الأزرار ------------------------------ */
+  /* ------------------------------ الأزرار: تنزيل مباشر ------------------------------ */
   function bindButtons() {
-    // زر نسخة الهاتف: تثبيت مباشر (PWA) أو تنزيل ملف APK
     const phoneBtn = document.getElementById('dl-phone');
     if (phoneBtn) {
-      phoneBtn.addEventListener('click', (e) => {
+      // زر الهاتف: تنزيل APK مباشرة (href يشير إلى الملف) + دليل التثبيت
+      phoneBtn.addEventListener('click', () => {
         if (installed || isStandalone()) { window.location.href = phoneBtn.dataset.fallback || 'mobile.html'; return; }
-        e.preventDefault();
         showGuide({
-          title: 'احصل على نسخة الهاتف',
-          subtitle: 'طريقتان — الثابتة تعمل فورًا، وملف APK يعمل بلا إنترنت من أول لحظة:',
-          steps: [],
-          actionLabel: 'فتح نسخة الهاتف',
-          actionHref: phoneBtn.dataset.fallback || 'mobile.html',
-        });
-        const actions = document.querySelector('#msi-backdrop .msi-actions');
-        if (!actions) return;
-        actions.innerHTML = '';
-        const mk = (label, cls, onClick) => {
-          const b = document.createElement('button');
-          b.className = `msi-btn ${cls}`;
-          b.textContent = label;
-          b.addEventListener('click', onClick);
-          actions.appendChild(b);
-          return b;
-        };
-        mk('تثبيت مباشر (موصى به)', 'primary', async () => {
-          document.querySelector('#msi-backdrop')?.remove();
-          document.getElementById('msi-style')?.remove();
-          await promptInstall();
-        });
-        mk('تنزيل ملف APK', '', () => {
-          const a = document.createElement('a');
-          a.href = 'download/apk';
-          a.download = 'MontageStudio.apk';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          document.querySelector('#msi-backdrop')?.remove();
-          document.getElementById('msi-style')?.remove();
-        });
-        mk('فتح نسخة الهاتف', '', () => {
-          window.location.href = phoneBtn.dataset.fallback || 'mobile.html';
+          title: 'جارٍ تنزيل تطبيق الهاتف…',
+          subtitle: 'بعد اكتمال التنزيل ثبّته مثل أي تطبيق:',
+          steps: [
+            'افتح <b>التنزيلات</b> واضغط <b>MontageStudio.apk</b>',
+            'إذا سألك النظام، اسمح بـ<b>التثبيت من مصادر غير معروفة</b> (مرة واحدة فقط)',
+            'اضغط <b>تثبيت</b> — ستجد أيقونة <b>Montage</b> مع تطبيقاتك ويعمل بلا إنترنت',
+          ],
+          actionLabel: 'تم',
         });
       });
     }
-    // زر نسخة الكمبيوتر: تنزيل EXE مباشرة (وإن كان الجهاز هاتفًا ننصح بنسخة الهاتف)
+
     const pcBtn = document.getElementById('dl-pc');
     if (pcBtn) {
       pcBtn.addEventListener('click', (e) => {
-        if (!isMobileDevice()) return; // على الكمبيوتر: التنزيل يتم عبر href مباشرة
+        if (!isMobileDevice()) return; // على الكمبيوتر: التنزيل يجري عبر href مباشرة
+        // من هاتف: نوضح أن EXE لويندوز ونقترح نسخة الهاتف
         e.preventDefault();
         showGuide({
           title: 'أنت تستخدم هاتفًا 📱',
-          subtitle: 'نسخة الكمبيوتر (EXE) تعمل على ويندوز فقط. لدينا نسخة مخصصة لهاتفك:',
-          steps: ['اضغط <b>«تثبيت نسخة الهاتف»</b> لتثبيت التطبيق مباشرة', 'أو نزّل <b>APK</b> لتثبيته يدويًا'],
-          actionLabel: 'فتح نسخة الكمبيوتر مع ذلك',
+          subtitle: 'ملف EXE مخصص لويندوز. لهاتفك يوجد تطبيق APK يعمل بلا إنترنت:',
+          steps: [
+            'ارجع لأعلى الصفحة واضغط <b>«تثبيت نسخة الهاتف»</b>',
+            'أو انتقل لنسخة الويب بالأسفل',
+          ],
+          actionLabel: 'فتح نسخة الويب',
           actionHref: pcBtn.dataset.fallback || 'desktop.html',
-        });
-        const actions = document.querySelector('#msi-backdrop .msi-actions');
-        if (!actions) return;
-        actions.innerHTML = '';
-        const mk = (label, cls, onClick) => {
-          const b = document.createElement('button');
-          b.className = `msi-btn ${cls}`;
-          b.textContent = label;
-          b.addEventListener('click', onClick);
-          actions.appendChild(b);
-          return b;
-        };
-        mk('تثبيت نسخة الهاتف', 'primary', async () => {
-          document.querySelector('#msi-backdrop')?.remove();
-          document.getElementById('msi-style')?.remove();
-          await promptInstall();
-        });
-        mk('تنزيل APK', '', () => {
-          const a = document.createElement('a');
-          a.href = 'download/apk';
-          a.download = 'MontageStudio.apk';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        });
-        mk('فتح نسخة الكمبيوتر', '', () => {
-          window.location.href = pcBtn.dataset.fallback || 'desktop.html';
         });
       });
     }
-    // تحديث شكل الزر بعد التثبيت الناجح
+
     document.addEventListener('ms:installed', () => {
       const btn = document.getElementById('dl-phone');
       if (btn) {

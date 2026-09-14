@@ -3,7 +3,7 @@
  * يعمل بلا إنترنت: يخزّن ملفات النسختين (الهاتف/الكمبيوتر) وصفحة التحميل مسبقًا،
  * ثم يقدّمها من الذاكرة مع تحديث في الخلفية (stale-while-revalidate).
  */
-const VERSION = 'ms-v2';
+const VERSION = 'ms-v3';
 const PRECACHE = [
   './',
   'index.html',

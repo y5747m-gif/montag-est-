@@ -210,7 +210,27 @@ export function formatDate(d = new Date()) {
 }
 
 /** تنزيل ملف */
-export function downloadBlob(blob, filename) {
+export function downloadBlob(blob, filename = 'file') {
+  // داخل تطبيق أندرويد (APK): احفظ عبر الجسر الأصلي إلى مجلد التنزيلات
+  const bridge = window.AndroidBridge;
+  if (bridge && typeof bridge.saveFile === 'function') {
+    try {
+      const fr = new FileReader();
+      fr.onload = () => {
+        const dataUrl = String(fr.result || '');
+        const b64 = dataUrl.includes(',') ? dataUrl.slice(dataUrl.indexOf(',') + 1) : dataUrl;
+        let result = '';
+        try { result = String(bridge.saveFile(filename, b64) || ''); }
+        catch (e) { result = 'ERR:bridge'; }
+        document.dispatchEvent(new CustomEvent('ms:file-saved', { detail: { ok: !result.startsWith('ERR'), name: filename } }));
+      };
+      fr.onerror = () => document.dispatchEvent(new CustomEvent('ms:file-saved', { detail: { ok: false, name: filename } }));
+      fr.readAsDataURL(blob);
+    } catch (e) {
+      document.dispatchEvent(new CustomEvent('ms:file-saved', { detail: { ok: false, name: filename } }));
+    }
+    return;
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
