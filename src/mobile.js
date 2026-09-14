@@ -386,6 +386,15 @@ class MobileApp {
       el('div', { class: 'm-quick-grid' }, [
         el('button', {
           class: 'm-quick',
+          onclick: () => {
+            const api = window.MS_INSTALL;
+            if (api?.isInstalled?.()) toastOk('التطبيق مثبت بالفعل على هاتفك ✓');
+            else if (api) api.promptInstall();
+            else toastWarn('التثبيت غير مدعوم في هذا المتصفح — استخدم قائمة المتصفح «إضافة إلى الشاشة الرئيسية»');
+          },
+        }, [icon('i-phone', 22), el('span', { text: 'ثبّت كتطبيق' })]),
+        el('button', {
+          class: 'm-quick',
           onclick: () => { this.store.saveToFile(); toastOk('تم حفظ المشروع'); },
         }, [icon('i-save', 22), el('span', { text: 'حفظ المشروع' })]),
         el('button', {

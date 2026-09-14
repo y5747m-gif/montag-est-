@@ -7,6 +7,8 @@
 <meta name="theme-color" content="#140c22" />
 <title>Montage Studio — نسخة الهاتف</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="manifest" href="manifest-mobile.webmanifest" />
+<link rel="apple-touch-icon" href="assets/icon-192.png" />
 <link rel="stylesheet" href="styles/mobile.css" />
 </head>
 <body>
@@ -155,6 +157,7 @@
 </div>
 
 <input type="file" id="m-file-input" multiple accept="video/*,audio/*,image/*" hidden />
+<script src="src/install.js" defer></script>
 <script type="module" src="src/mobile.js"></script>
 </body>
 </html>

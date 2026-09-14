@@ -1,0 +1,19 @@
+{
+  "id": "montage-studio-desktop",
+  "name": "Montage Studio — نسخة الكمبيوتر",
+  "short_name": "Montage PC",
+  "description": "محرر فيديو وموشن جرافيك احترافي يعمل داخل المتصفح — نسخة الكمبيوتر الكاملة: خط زمني، مفاتيح، منحنيات، وتصدير متعدد.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./desktop.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#131417",
+  "theme_color": "#131417",
+  "categories": ["graphics", "productivity", "video"],
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

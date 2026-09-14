@@ -8,6 +8,8 @@
 <meta name="description" content="Montage Studio — استوديو المونتاج والموشن جرافيك في المتصفح. حمّل نسخة الهاتف أو نسخة الكمبيوتر." />
 <title>Montage Studio — حمّل النسخة المناسبة لجهازك</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="manifest" href="manifest-mobile.webmanifest" />
+<link rel="apple-touch-icon" href="assets/icon-192.png" />
 <style>
   :root {
     --bg: #0b0817;
@@ -511,7 +513,7 @@
       </div>
 
       <!-- الزر تحت واجهة الهاتف -->
-      <a class="dl-btn phone-btn-grad" href="mobile.html">
+      <a class="dl-btn phone-btn-grad" id="dl-phone" href="mobile.html" data-fallback="mobile.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4l4 4"/><path d="M5 15v3.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V15"/></svg>
         تحميل نسخة الهاتف
       </a>
@@ -543,7 +545,7 @@
       </div>
 
       <!-- الزر تحت واجهة الكمبيوتر -->
-      <a class="dl-btn pc-btn-grad" href="desktop.html">
+      <a class="dl-btn pc-btn-grad" id="dl-pc" href="desktop.html" data-fallback="desktop.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4l4 4"/><path d="M5 15v3.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V15"/></svg>
         تحميل نسخة الكمبيوتر
       </a>
@@ -571,6 +573,7 @@
   </footer>
 </div>
 
+<script src="src/install.js" defer></script>
 <script>
   // اكتشاف الهاتف تلقائيًا وعرض تنبيه في الأعلى
   try {
