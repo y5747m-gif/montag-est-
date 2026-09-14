@@ -124,6 +124,15 @@ svg use { pointer-events: none; }
 .tb-btn.on { background: var(--accent); color: #fff; }
 .tb-btn.sm { width: 24px; height: 22px; font-size: 12px; }
 .tb-btn svg { width: 15px; height: 15px; }
+/* رابط نصي داخل شريط الأدوات (مثل: الانتقال إلى نسخة الهاتف) */
+.tb-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 24px; padding: 0 9px; border-radius: var(--radius-sm);
+  border: 1px solid transparent; color: var(--txt-1);
+  text-decoration: none; font-size: 12px; font-weight: 700; white-space: nowrap;
+}
+.tb-link:hover { background: var(--bg-3); color: var(--txt-0); border-color: var(--line-soft); }
+.tb-link svg { width: 14px; height: 14px; }
 .tb-btn.ghost { border-color: transparent; }
 .tb-btn[disabled] { opacity: .35; pointer-events: none; }
 

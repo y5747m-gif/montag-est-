@@ -87,6 +87,30 @@ class App {
     }
     document.body.classList.add('ready');
     if (!restored) toastOk('مشروع تجريبي جاهز — جرّب الأدوات ومساحة العمل');
+    this.setupPreviewMode();
+  }
+
+  /* ============================ وضع المعاينة ============================ */
+  /** (?preview=1) — تشغيل تلقائي داخل إطار المعاينة في صفحة التحميل */
+  setupPreviewMode() {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.get('preview') !== '1') return;
+      this.previewMode = true;
+      this.viewer.resolution = 0.5;
+      this.viewer.layout();
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((en) => {
+            if (en.isIntersecting) { if (!this.store.playing) this.viewer.play(); }
+            else if (this.store.playing) this.viewer.stop();
+          });
+        }, { threshold: 0.25 });
+        io.observe(this.viewer.canvas);
+      } else {
+        setTimeout(() => this.viewer.play(), 400);
+      }
+    } catch (e) { /* تجاهل */ }
   }
 
   /* ============================ شريط التشغيل ============================ */

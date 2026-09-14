@@ -5,7 +5,8 @@ import { el } from './dom.js';
 
 let root = null;
 export function toast(message, type = 'info', ms = 2800) {
-  if (!root) root = document.getElementById('toast-root');
+  // إعادة تحديد الجذر إذا كان غير موجود أو ينتمي لمستند آخر (بيئات متعددة/اختبارات)
+  if (!root || root.ownerDocument !== document) root = document.getElementById('toast-root');
   if (!root) return;
   const node = el('div', { class: `toast ${type}` }, [
     el('div', { text: message }),

@@ -38,6 +38,9 @@ const server = http.createServer((req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     let pathname = decodeURIComponent(url.pathname);
     if (pathname === '/') pathname = '/index.html';
+    // مسارات ودية للنسختين
+    else if (pathname === '/mobile') pathname = '/mobile.html';
+    else if (pathname === '/desktop') pathname = '/desktop.html';
     const filePath = path.join(ROOT, path.normalize(pathname).replace(/^([/\\])+/, ''));
     if (!filePath.startsWith(ROOT)) {
       res.writeHead(403).end('Forbidden');

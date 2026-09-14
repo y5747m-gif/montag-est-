@@ -18,11 +18,12 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const load = (rel) => import(path.join(root, rel));
 
 /* ============================ بيئة المتصفح الوهمية ============================ */
-function installDom({ crc32 }) {
+function installDom({ crc32, page = 'desktop.html' }) {
   // نستورد jsdom بشكل كسول حتى لا تفشل الاختبارات الصرفة
   const { JSDOM } = globalThis.__JSDOM__ || {};
   if (!JSDOM) throw new Error('jsdom غير مثبت');
-  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  // desktop.html = نسخة الكمبيوتر، mobile.html = نسخة الهاتف (index.html أصبحت صفحة تحميل)
+  const html = fs.readFileSync(path.join(root, page), 'utf8');
   const dom = new JSDOM(html, { url: 'http://localhost:5173/', pretendToBeVisual: true, runScripts: 'outside-only' });
   const { window } = dom;
 
@@ -483,6 +484,76 @@ function arrayCleanup(store, n) {
   }
 }
 
+/* ============================ 3) اختبارات نسخة الهاتف ============================ */
+async function mobileTests() {
+  const { crc32 } = await load('src/core/zip.js');
+  const { window, dom } = installDom({ crc32, page: 'mobile.html' });
+
+  section('تشغيل نسخة الهاتف');
+  const mod = await load('src/mobile.js');
+  const app = mod.default || window.MS_MOBILE_APP;
+  ok(!!app, 'تطبيق الهاتف أُقلع');
+  ok(window.MS_MOBILE_APP === app, 'window.MS_MOBILE_APP متاح');
+  const store = app.store;
+  ok(!!store.comp && store.comp.layers.length > 3, `مشروع تجريبي (${store.comp?.layers.length} طبقة)`);
+
+  section('واجهة نسخة الهاتف');
+  const q = (s) => document.querySelectorAll(s).length;
+  ok(q('#m-nav .m-nav-btn') === 5, 'خمسة أزرار تنقّل سفلية');
+  ok(q('#m-tab-home .m-quick') >= 6, `بطاقات الإضافة السريعة (${q('#m-tab-home .m-quick')})`);
+  ok(q('#m-export-options .m-export-opt') === 3, 'ثلاثة خيارات تصدير');
+
+  const click = (node) => node?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+
+  // التبويبات
+  click(document.querySelector('#m-nav .m-nav-btn[data-mtab="layers"]'));
+  ok(document.getElementById('m-tab-layers')?.hidden === false, 'تبويب الطبقات يظهر');
+  ok(q('#m-tab-layers .m-layer-row') >= 3, `صفوف الطبقات (${q('#m-tab-layers .m-layer-row')})`);
+  click(document.querySelector('#m-nav .m-nav-btn[data-mtab="media"]'));
+  ok(document.getElementById('m-tab-media')?.hidden === false, 'تبويب الوسائط يظهر');
+  ok(q('#m-tab-media .m-asset') >= 1, 'بطاقات الوسائط مبنية');
+
+  // تحديد طبقة → الخصائص والتأثيرات
+  store.selectLayer(store.comp.layers[0].id);
+  click(document.querySelector('#m-nav .m-nav-btn[data-mtab="props"]'));
+  ok(q('#m-tab-props .m-prop-card') >= 2, 'لوحة الخصائص مبنية للطبقة المحددة');
+  click(document.querySelector('#m-nav .m-nav-btn[data-mtab="effects"]'));
+  ok(q('#m-tab-effects .m-fx-item') >= 20, `متصفح التأثيرات (${q('#m-tab-effects .m-fx-item')})`);
+
+  // إضافة تأثير بالنقر على العنصر
+  const target = store.comp.layers.find((l) => l.id === store.selection.layerIds[0]);
+  const fxBefore = target?.effects.length || 0;
+  click(document.querySelector('#m-tab-effects .m-fx-item'));
+  const afterSel = store.comp.layers.find((l) => l.id === store.selection.layerIds[0]) || target;
+  ok((afterSel?.effects.length || 0) === fxBefore + 1, 'النقر على تأثير يضيفه للطبقة المحددة');
+
+  // إضافة طبقة سريعة
+  const before = store.comp.layers.length;
+  app.addQuickLayer('text');
+  ok(store.comp.layers.length === before + 1, 'إضافة طبقة نص سريعة');
+
+  section('المعاينة والتشغيل في نسخة الهاتف');
+  let drew = false;
+  try { app.draw(); drew = true; } catch (e) { failures.push(`mobile draw: ${e.message}`); }
+  ok(drew, 'رسم المعاينة على Canvas');
+
+  app.play();
+  ok(app.playing === true, 'التشغيل يبدأ');
+  app.stop();
+  ok(app.playing === false, 'الإيقاف يعمل');
+  click(document.getElementById('m-btn-play'));
+  ok(app.playing === true, 'زر التشغيل يعمل');
+  app.stop();
+
+  // فتح ورقة التصدير
+  click(document.getElementById('m-btn-export'));
+  ok(document.getElementById('m-app')?.classList.contains('export-open'), 'ورقة التصدير تُفتح');
+  click(document.getElementById('m-btn-export-close'));
+  ok(!document.getElementById('m-app')?.classList.contains('export-open'), 'ورقة التصدير تُغلق');
+
+  dom.window.close?.();
+}
+
 /* ============================ التشغيل ============================ */
 try {
   const jsdom = await import('jsdom');
@@ -492,7 +563,10 @@ try {
 }
 
 await unitTests();
-if (globalThis.__JSDOM__) await appTests();
+if (globalThis.__JSDOM__) {
+  await appTests();
+  await mobileTests();
+}
 
 console.log(`\n${'—'.repeat(40)}`);
 console.log(`النتيجة: ${passed} ناجح · ${failed} فاشل`);
