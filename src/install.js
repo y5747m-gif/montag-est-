@@ -127,51 +127,98 @@
 
   /* ------------------------------ الأزرار ------------------------------ */
   function bindButtons() {
-    // زر تحميل نسخة الهاتف
+    // زر نسخة الهاتف: تثبيت مباشر (PWA) أو تنزيل ملف APK
     const phoneBtn = document.getElementById('dl-phone');
     if (phoneBtn) {
-      phoneBtn.addEventListener('click', async (e) => {
+      phoneBtn.addEventListener('click', (e) => {
         if (installed || isStandalone()) { window.location.href = phoneBtn.dataset.fallback || 'mobile.html'; return; }
         e.preventDefault();
-        const result = await promptInstall();
-        if (result === 'dismissed') window.location.href = phoneBtn.dataset.fallback || 'mobile.html';
+        showGuide({
+          title: 'احصل على نسخة الهاتف',
+          subtitle: 'طريقتان — الثابتة تعمل فورًا، وملف APK يعمل بلا إنترنت من أول لحظة:',
+          steps: [],
+          actionLabel: 'فتح نسخة الهاتف',
+          actionHref: phoneBtn.dataset.fallback || 'mobile.html',
+        });
+        const actions = document.querySelector('#msi-backdrop .msi-actions');
+        if (!actions) return;
+        actions.innerHTML = '';
+        const mk = (label, cls, onClick) => {
+          const b = document.createElement('button');
+          b.className = `msi-btn ${cls}`;
+          b.textContent = label;
+          b.addEventListener('click', onClick);
+          actions.appendChild(b);
+          return b;
+        };
+        mk('تثبيت مباشر (موصى به)', 'primary', async () => {
+          document.querySelector('#msi-backdrop')?.remove();
+          document.getElementById('msi-style')?.remove();
+          await promptInstall();
+        });
+        mk('تنزيل ملف APK', '', () => {
+          const a = document.createElement('a');
+          a.href = 'download/apk';
+          a.download = 'MontageStudio.apk';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          document.querySelector('#msi-backdrop')?.remove();
+          document.getElementById('msi-style')?.remove();
+        });
+        mk('فتح نسخة الهاتف', '', () => {
+          window.location.href = phoneBtn.dataset.fallback || 'mobile.html';
+        });
       });
     }
-    // زر تحميل نسخة الكمبيوتر: على الهاتف ننصح بنسخة الهاتف أولًا
+    // زر نسخة الكمبيوتر: تنزيل EXE مباشرة (وإن كان الجهاز هاتفًا ننصح بنسخة الهاتف)
     const pcBtn = document.getElementById('dl-pc');
     if (pcBtn) {
       pcBtn.addEventListener('click', (e) => {
-        if (!isMobileDevice()) return; // على الكمبيوتر: انتقال عادي
+        if (!isMobileDevice()) return; // على الكمبيوتر: التنزيل يتم عبر href مباشرة
         e.preventDefault();
         showGuide({
           title: 'أنت تستخدم هاتفًا 📱',
-          subtitle: 'نسخة الكمبيوتر مصممة للشاشات الكبيرة. لدينا نسخة مخصصة للهاتف بتصميم لمسي — وأنصح بتثبيتها:',
-          steps: ['اضغط <b>«تثبيت نسخة الهاتف»</b> ليظهر التطبيق على شاشتك الرئيسية', 'أو افتح نسخة الكمبيوتر مع ذلك إن أردت'],
+          subtitle: 'نسخة الكمبيوتر (EXE) تعمل على ويندوز فقط. لدينا نسخة مخصصة لهاتفك:',
+          steps: ['اضغط <b>«تثبيت نسخة الهاتف»</b> لتثبيت التطبيق مباشرة', 'أو نزّل <b>APK</b> لتثبيته يدويًا'],
           actionLabel: 'فتح نسخة الكمبيوتر مع ذلك',
           actionHref: pcBtn.dataset.fallback || 'desktop.html',
-          onClose: () => {},
         });
-        // إضافة زر تثبيت نسخة الهاتف داخل النافذة
         const actions = document.querySelector('#msi-backdrop .msi-actions');
-        if (actions) {
-          const installFirst = document.createElement('button');
-          installFirst.className = 'msi-btn primary';
-          installFirst.textContent = 'تثبيت نسخة الهاتف';
-          actions.prepend(installFirst);
-          installFirst.addEventListener('click', async () => {
-            document.querySelector('#msi-backdrop')?.remove();
-            document.getElementById('msi-style')?.remove();
-            await promptInstall();
-          });
-        }
+        if (!actions) return;
+        actions.innerHTML = '';
+        const mk = (label, cls, onClick) => {
+          const b = document.createElement('button');
+          b.className = `msi-btn ${cls}`;
+          b.textContent = label;
+          b.addEventListener('click', onClick);
+          actions.appendChild(b);
+          return b;
+        };
+        mk('تثبيت نسخة الهاتف', 'primary', async () => {
+          document.querySelector('#msi-backdrop')?.remove();
+          document.getElementById('msi-style')?.remove();
+          await promptInstall();
+        });
+        mk('تنزيل APK', '', () => {
+          const a = document.createElement('a');
+          a.href = 'download/apk';
+          a.download = 'MontageStudio.apk';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        });
+        mk('فتح نسخة الكمبيوتر', '', () => {
+          window.location.href = pcBtn.dataset.fallback || 'desktop.html';
+        });
       });
     }
     // تحديث شكل الزر بعد التثبيت الناجح
     document.addEventListener('ms:installed', () => {
       const btn = document.getElementById('dl-phone');
       if (btn) {
-        btn.querySelector('span')?.remove();
-        btn.insertAdjacentHTML('beforeend', '<span>تم التثبيت ✓ — افتح التطبيق</span>');
+        const span = btn.querySelector('span');
+        if (span) span.textContent = 'تم التثبيت ✓ — افتح التطبيق';
         btn.dataset.fallback = 'mobile.html';
       }
     });

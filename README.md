@@ -59,6 +59,26 @@ npm i -D jsdom          # الاعتماد الوحيد الاختياري (لل
 
 ---
 
+## تطبيقات الجهاز: APK للأندرويد وEXE لويندوز
+
+| المسار | الملف | البناء |
+|---|---|---|
+| `/download/apk` | `downloads/MontageStudio.apk` (~1.4MB) | `npm run build:apk` |
+| `/download/exe` | `dist/MontageStudio-win64.exe` (~85MB) | `npm run build:exe` |
+
+### نسخة الأندرويد (APK)
+- تطبيق مستقل (WebView بملء الشاشة) يحمل الموقع كاملًا بداخله ويعمل **بلا إنترنت**، بأيقونة البرنامج واسمه.
+- سلسلة بناء من npm فقط بلا Android SDK: موارد وsmali عبر `@postar/apktool-node` + JRE عبر `@termestra/runtime-linux-x64` + توقيع v2/v3 عبر `apksigner.jar`.
+- الموقع داخل APK نسخة واحدة مُجمّعة من الوحدات (لا ES Modules داخل file://) — انظر `tools/bundle-site.mjs`.
+- مفتاح التوقيع ثابت في `tools/release.keystore` (كلمة السر `montage2024`) — التزم به لتقبل التحديثات فوق التثبيت السابق.
+
+### نسخة ويندوز (EXE)
+- ملف تنفيذي واحد يُبنى عبر `bun build --compile` (Bun يُثبَّت من npm) ويضمّن الموقعين (الهاتف + الكمبيوتر).
+- عند التشغيل: يفتح خادمًا محليًا (`127.0.0.1:منفذ عشوائي`) ويفتح المتصفح تلقائيًا على المحرر.
+- الأيقونة تُحقن في ثنائي Bun الأساسي عبر `resedit` (`tools/patch-exe-icon.mjs`).
+
+---
+
 ## المزايا
 
 ### 1) المشروع والوسائط

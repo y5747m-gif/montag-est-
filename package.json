@@ -7,7 +7,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node tests/run.js"
+    "test": "node tests/run.js",
+    "build:apk": "node tools/make-apk.mjs",
+    "build:exe": "node tools/make-exe.mjs && node tools/patch-exe-icon.mjs || node tools/make-exe.mjs",
+    "build:ico": "node tools/make-ico.mjs"
   },
   "engines": {
     "node": ">=18"
@@ -24,7 +27,12 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "jsdom": "^25.0.1"
+    "@electron/packager": "^20.3.0",
+    "@postar/apktool-node": "^0.3.4",
+    "bun": "^1.4.2",
+    "electron": "^44.3.0",
+    "jsdom": "^25.0.1",
+    "resedit": "^3.1.0"
   },
   "repository": {
     "type": "git",

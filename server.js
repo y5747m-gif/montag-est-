@@ -41,6 +41,36 @@ const server = http.createServer((req, res) => {
     // مسارات ودية للنسختين
     else if (pathname === '/mobile') pathname = '/mobile.html';
     else if (pathname === '/desktop') pathname = '/desktop.html';
+    // تنزيل تطبيقات الجهاز
+    else if (pathname === '/download/apk') {
+      const apk = path.join(ROOT, 'downloads', 'MontageStudio.apk');
+      if (fs.existsSync(apk)) {
+        res.writeHead(200, {
+          'Content-Type': 'application/vnd.android.package-archive',
+          'Content-Length': fs.statSync(apk).size,
+          'Content-Disposition': 'attachment; filename="MontageStudio.apk"',
+          'Cache-Control': 'no-cache',
+        });
+        fs.createReadStream(apk).pipe(res);
+        return;
+      }
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('لم يُبنَ ملف APK بعد — شغّل: node tools/make-apk.mjs');
+      return;
+    } else if (pathname === '/download/exe') {
+      const exe = path.join(ROOT, 'dist', 'MontageStudio-win64.exe');
+      if (fs.existsSync(exe)) {
+        res.writeHead(200, {
+          'Content-Type': 'application/vnd.microsoft.portable-executable',
+          'Content-Length': fs.statSync(exe).size,
+          'Content-Disposition': 'attachment; filename="MontageStudio-win64.exe"',
+          'Cache-Control': 'no-cache',
+        });
+        fs.createReadStream(exe).pipe(res);
+        return;
+      }
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('لم يُبنَ ملف EXE بعد — شغّل: node tools/make-exe.mjs');
+      return;
+    }
     const filePath = path.join(ROOT, path.normalize(pathname).replace(/^([/\\])+/, ''));
     if (!filePath.startsWith(ROOT)) {
       res.writeHead(403).end('Forbidden');
