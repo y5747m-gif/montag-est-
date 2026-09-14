@@ -42,6 +42,11 @@ const TYPE_INFO = {
   visualizer: { label: 'موجّه صوتي', ico: 'i-wave' },
 };
 
+/** اهتزاز خفيف — تغذية راجعة لمسية داخل تطبيق أندرويد */
+function buzz(ms = 12) {
+  try { window.AndroidBridge?.vibrate?.(ms); } catch (e) { /* تجاهل */ }
+}
+
 function pickMime() {
   const candidates = [
     'video/webm;codecs=vp9,opus',
@@ -118,6 +123,7 @@ class MobileApp {
     const app = document.getElementById('m-app');
     document.querySelectorAll('#m-nav .m-nav-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
+        buzz(12);
         this.setTab(btn.dataset.mtab);
         // فتح اللوحة إن كانت مطوية
         app.classList.remove('sheet-collapsed');
@@ -185,7 +191,7 @@ class MobileApp {
     store.on('playing', (v) => this.updatePlayUI(v));
     // نتائج الحفظ عبر جسر أندرويد الأصلي (داخل APK)
     document.addEventListener('ms:file-saved', (e) => {
-      if (e.detail?.ok) toastOk(`حُفظ «${e.detail.name}» في مجلد التنزيلات`);
+      if (e.detail?.ok) { buzz(35); toastOk(`حُفظ «${e.detail.name}» في مجلد التنزيلات`); }
       else toastErr(`تعذّر حفظ «${e.detail?.name || 'الملف'}»`);
     });
   }
@@ -244,7 +250,7 @@ class MobileApp {
     }
   }
 
-  togglePlay() { if (this.playing) this.stop(); else this.play(); }
+  togglePlay() { buzz(15); if (this.playing) this.stop(); else this.play(); }
 
   play() {
     if (this.playing) return;
@@ -391,12 +397,23 @@ class MobileApp {
       el('div', { class: 'm-quick-grid' }, [
         el('button', {
           class: 'm-quick',
-          title: 'تنزيل ملف APK للتثبيت الدائم',
-          onclick: () => {
-            if (window.AndroidBridge) {
-              // داخل التطبيق: افتح رابط التنزيل في المتصفح النظامي
-              window.location.href = 'download/apk';
-            } else {
+          onclick: () => { buzz(15); this.store.saveToFile(); toastOk('تم حفظ المشروع'); },
+        }, [icon('i-save', 22), el('span', { text: 'حفظ المشروع' })]),
+        el('button', {
+          class: 'm-quick',
+          onclick: () => { buzz(15); this.openExport(); },
+        }, [icon('i-export', 22), el('span', { text: 'تصدير' })]),
+        ...(window.AndroidBridge ? [
+          // داخل تطبيق أندرويد: لا روابط ويب ولا تنزيل APK — التطبيق مثبت أصلًا
+          el('button', {
+            class: 'm-quick',
+            onclick: () => { buzz(15); toastOk('Montage Studio v1.2 — يعمل بلا إنترنت'); },
+          }, [icon('i-phone', 22), el('span', { text: 'حول التطبيق' })]),
+        ] : [
+          el('button', {
+            class: 'm-quick',
+            title: 'تنزيل ملف APK للتثبيت الدائم',
+            onclick: () => {
               const a = document.createElement('a');
               a.href = 'download/apk';
               a.download = 'MontageStudio.apk';
@@ -404,22 +421,11 @@ class MobileApp {
               a.click();
               a.remove();
               toastOk('جارٍ تنزيل ملف APK — ثبّته من التنزيلات');
-            }
-          },
-        }, [icon('i-phone', 22), el('span', { text: 'تنزيل APK' })]),
-        el('button', {
-          class: 'm-quick',
-          onclick: () => { this.store.saveToFile(); toastOk('تم حفظ المشروع'); },
-        }, [icon('i-save', 22), el('span', { text: 'حفظ المشروع' })]),
-        el('button', {
-          class: 'm-quick',
-          onclick: () => this.openExport(),
-        }, [icon('i-export', 22), el('span', { text: 'تصدير' })]),
-        el('a', { class: 'm-quick', href: 'desktop.html', style: { textDecoration: 'none' } }, [
-          icon('i-monitor', 22), el('span', { text: 'نسخة الكمبيوتر' }),
-        ]),
-        el('a', { class: 'm-quick', href: 'index.html', style: { textDecoration: 'none' } }, [
-          icon('i-phone', 22), el('span', { text: 'صفحة التحميل' }),
+            },
+          }, [icon('i-phone', 22), el('span', { text: 'تنزيل APK' })]),
+          el('a', { class: 'm-quick', href: 'desktop.html', style: { textDecoration: 'none' } }, [
+            icon('i-monitor', 22), el('span', { text: 'نسخة الكمبيوتر' }),
+          ]),
         ]),
       ]),
     );
@@ -455,6 +461,7 @@ class MobileApp {
         if (asset && layer.props.assetId) layer.props.assetId.value = asset.id;
       }
     }
+    buzz(18);
     this.store.addLayer(layer);
     this.store.setStatus(`أُضيفت طبقة: ${TYPE_INFO[type]?.label || type}`);
     toastOk(`أُضيفت طبقة: ${TYPE_INFO[type]?.label || type}`);

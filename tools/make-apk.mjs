@@ -181,14 +181,16 @@ for (const d of [
 fs.writeFileSync(path.join(PROJECT, 'AndroidManifest.xml'), `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="${PKG}"
-    android:versionCode="2"
-    android:versionName="1.1">
+    android:versionCode="3"
+    android:versionName="1.2">
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="29" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
     <application
         android:label="Montage Studio"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:usesCleartextTraffic="false"
@@ -256,14 +258,38 @@ usesFramework:
   tag: null
 version: 2.9.3
 versionInfo:
-  versionCode: '2'
-  versionName: '1.1'
+  versionCode: '3'
+  versionName: '1.2'
 `);
 
-// الأيقونات بكثافات مختلفة
+// الأيقونات: تقليدية (أندرويد 5-7) + طبقات Adaptive (أندرويد 8+)
+fs.mkdirSync(path.join(PROJECT, 'res', 'mipmap-anydpi-v26'), { recursive: true });
+for (const xmlName of ['ic_launcher.xml', 'ic_launcher_round.xml']) {
+  fs.writeFileSync(path.join(PROJECT, 'res', 'mipmap-anydpi-v26', xmlName), `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@mipmap/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>
+`);
+}
+// طبقة أمامية: الشعار مُصغّرًا داخل قماشة شفافة (منطقة الأمان 66/108)
+function foregroundAt(layerSize) {
+  const inner = Math.round(layerSize * 0.62);
+  const art = resize(masterIcon.rgba, masterIcon.width, masterIcon.height, inner, inner);
+  const canvas = Buffer.alloc(layerSize * layerSize * 4);
+  const off = Math.floor((layerSize - inner) / 2);
+  for (let y = 0; y < inner; y += 1) {
+    art.copy(canvas, ((off + y) * layerSize + off) * 4, y * inner * 4, (y + 1) * inner * 4);
+  }
+  return encodePNG(layerSize, layerSize, canvas);
+}
 const densities = [['mdpi', 48], ['hdpi', 72], ['xhdpi', 96], ['xxhdpi', 144], ['xxxhdpi', 192]];
+const layerSizes = { mdpi: 108, hdpi: 162, xhdpi: 216, xxhdpi: 324, xxxhdpi: 432 };
 for (const [d, size] of densities) {
-  fs.writeFileSync(path.join(PROJECT, 'res', `mipmap-${d}`, 'ic_launcher.png'), iconAt(size));
+  const dir = path.join(PROJECT, 'res', `mipmap-${d}`);
+  fs.writeFileSync(path.join(dir, 'ic_launcher.png'), iconAt(size));
+  fs.writeFileSync(path.join(dir, 'ic_launcher_background.png'), iconAt(layerSizes[d]));
+  fs.writeFileSync(path.join(dir, 'ic_launcher_foreground.png'), foregroundAt(layerSizes[d]));
 }
 
 // كود التطبيق (smali) — WebView أصيل: شاشة بداية، منتقي ملفات، جسر حفظ، ومستمع تنزيلات
@@ -360,6 +386,10 @@ fs.writeFileSync(path.join(PROJECT, 'smali', 'com', 'montagestudio', 'app', 'Mai
 
     invoke-virtual {v1, v2}, Landroid/webkit/WebSettings;->setMediaPlaybackRequiresUserGesture(Z)V
 
+    const/16 v2, 0x64
+
+    invoke-virtual {v1, v2}, Landroid/webkit/WebSettings;->setTextZoom(I)V
+
     const/4 v2, 0x0
 
     invoke-virtual {v1, v2}, Landroid/webkit/WebSettings;->setAllowFileAccessFromFileURLs(Z)V
@@ -393,12 +423,26 @@ fs.writeFileSync(path.join(PROJECT, 'smali', 'com', 'montagestudio', 'app', 'Mai
     invoke-virtual {p0}, Landroid/app/Activity;->getWindow()Landroid/view/Window;
     move-result-object v1
 
+    const/16 v2, 0x80
+
+    invoke-virtual {v1, v2}, Landroid/view/Window;->addFlags(I)V
+
     invoke-virtual {v1}, Landroid/view/Window;->getDecorView()Landroid/view/View;
     move-result-object v1
 
     const/16 v2, 0x1706
 
     invoke-virtual {v1, v2}, Landroid/view/View;->setSystemUiVisibility(I)V
+
+    const/4 v2, 0x2
+
+    invoke-virtual {v0, v2}, Landroid/view/View;->setOverScrollMode(I)V
+
+    const/4 v2, 0x0
+
+    invoke-virtual {v0, v2}, Landroid/view/View;->setHorizontalScrollBarEnabled(Z)V
+
+    invoke-virtual {v0, v2}, Landroid/view/View;->setVerticalScrollBarEnabled(Z)V
 
     const-string v1, "file:///android_asset/www/index.html"
 
@@ -961,6 +1005,39 @@ fs.writeFileSync(path.join(PROJECT, 'smali', 'com', 'montagestudio', 'app', 'Fil
     move-result-object v0
 
     return-object v0
+.end method
+
+.method public vibrate(J)V
+    .locals 3
+
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    :try_start_0
+    iget-object v0, p0, Lcom/montagestudio/app/FileBridge;->activity:Lcom/montagestudio/app/MainActivity;
+
+    const-string v1, "vibrator"
+
+    invoke-virtual {v0, v1}, Landroid/app/Activity;->getSystemService(Ljava/lang/String;)Ljava/lang/Object;
+
+    move-result-object v0
+
+    check-cast v0, Landroid/os/Vibrator;
+
+    if-eqz v0, :cond_done
+
+    invoke-virtual {v0, p1, p2}, Landroid/os/Vibrator;->vibrate(J)V
+
+    :cond_done
+    :try_end_0
+    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
+
+    return-void
+
+    :catch_0
+    move-exception v0
+
+    return-void
 .end method
 `);
 

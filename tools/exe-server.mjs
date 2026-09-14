@@ -45,15 +45,35 @@ console.log('  ✔ Montage Studio يعمل الآن على: ' + url);
 console.log('  يمكنك تصغير هذه النافذة — إغلاقها يوقف التطبيق.');
 console.log('');
 
-// فتح المتصفح تلقائيًا
-try {
-  const args = process.platform === 'win32'
-    ? ['cmd', ['/c', 'start', '', url]]
-    : process.platform === 'darwin'
-      ? ['open', [url]]
-      : ['xdg-open', [url]];
-  Bun.spawn(args, { stdout: 'ignore', stderr: 'ignore' });
-} catch (e) { /* المتصفح الافتراضي غير متاح — الرابط مطبوع أعلاه */ }
+// فتح نافذة تطبيق مستقلة (بلا واجهة متصفح) — وضع app في Edge/Chrome
+const appUrl = url;
+const openers = process.platform === 'win32'
+  ? [
+      ['cmd', ['/c', 'start', 'msedge', `--app=${appUrl}`]],
+      ['cmd', ['/c', 'start', 'chrome', `--app=${appUrl}`]],
+      ['cmd', ['/c', 'start', '', appUrl]],
+    ]
+  : process.platform === 'darwin'
+    ? [
+        ['open', ['-a', 'Microsoft Edge', `--args`, `--app=${appUrl}`]],
+        ['open', ['-a', 'Google Chrome', `--args`, `--app=${appUrl}`]],
+        ['open', [appUrl]],
+      ]
+    : [
+        ['chromium', [`--app=${appUrl}`]],
+        ['chromium-browser', [`--app=${appUrl}`]],
+        ['google-chrome', [`--app=${appUrl}`]],
+        ['xdg-open', [appUrl]],
+      ];
+let opened = false;
+for (const [cmd, args] of openers) {
+  try {
+    Bun.spawn([cmd, args], { stdout: 'ignore', stderr: 'ignore' });
+    opened = true;
+    break;
+  } catch (e) { /* جرّب التالي */ }
+}
+void opened;
 
 const shutdown = () => process.exit(0);
 process.on('SIGINT', shutdown);
