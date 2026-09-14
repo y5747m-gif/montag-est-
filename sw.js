@@ -3,7 +3,7 @@
  * يعمل بلا إنترنت: يخزّن ملفات النسختين (الهاتف/الكمبيوتر) وصفحة التحميل مسبقًا،
  * ثم يقدّمها من الذاكرة مع تحديث في الخلفية (stale-while-revalidate).
  */
-const VERSION = 'ms-v5';
+const VERSION = 'ms-v6';
 const PRECACHE = [
   './',
   'index.html',
@@ -15,6 +15,7 @@ const PRECACHE = [
   'styles/timeline.css',
   'styles/viewer.css',
   'styles/mobile.css',
+  'src/install.js',
   'src/main.js',
   'src/mobile.js',
   'src/core/anim.js',
@@ -73,10 +74,26 @@ self.addEventListener('fetch', (event) => {
   if (new URL(req.url).origin !== self.location.origin) return;
   if (req.headers.get('range')) return; // طلبات الميديا الجزئية تُترك للشبكة
 
-  // stale-while-revalidate: الرد من الذاكرة فورًا + تحديث في الخلفية
+  // صفحات التنقل: الشبكة أولًا (تظهر التحديثات فورًا) والذاكرة احتياط دون اتصال
+  if (req.mode === 'navigate') {
+    event.respondWith((async () => {
+      const cache = await caches.open(VERSION);
+      try {
+        const res = await fetch(req);
+        if (res && res.ok && res.type === 'basic') cache.put(req, res.clone()).catch(() => {});
+        return res;
+      } catch {
+        const cached = await cache.match(req, { ignoreSearch: true });
+        return cached || Response.error();
+      }
+    })());
+    return;
+  }
+
+  // بقية الأصول: stale-while-revalidate — الرد من الذاكرة فورًا + تحديث في الخلفية
   event.respondWith((async () => {
     const cache = await caches.open(VERSION);
-    const cached = await cache.match(req, { ignoreSearch: req.mode === 'navigate' ? false : true });
+    const cached = await cache.match(req, { ignoreSearch: true });
     const network = fetch(req).then((res) => {
       if (res && res.ok && res.type === 'basic') cache.put(req, res.clone()).catch(() => {});
       return res;

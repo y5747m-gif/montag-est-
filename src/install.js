@@ -43,7 +43,7 @@
     .msi-btn.primary{background:linear-gradient(135deg,#8b5cf6,#ec4899);border:0;box-shadow:0 8px 22px rgba(236,72,153,.35)}
   `;
 
-  function showGuide({ title, subtitle, steps = [], actionLabel = 'فهمت', actionHref, onClose }) {
+  function showGuide({ title, subtitle, steps = [], actionLabel = 'فهمت', actionHref, onAction, onClose }) {
     if (document.getElementById('msi-backdrop')) return;
     const style = document.createElement('style');
     style.textContent = STYLE;
@@ -58,7 +58,7 @@
         <ol class="msi-steps">${steps.map((s) => `<li>${s}</li>`).join('')}</ol>
         <div class="msi-actions">
           <button class="msi-btn" data-msi-close>لاحقًا</button>
-          ${actionHref ? `<a class="msi-btn primary" href="${actionHref}">${actionLabel}</a>` : `<button class="msi-btn primary" data-msi-close>${actionLabel}</button>`}
+          ${actionHref ? `<a class="msi-btn primary" href="${actionHref}">${actionLabel}</a>` : `<button class="msi-btn primary" data-msi-close data-msi-action>${actionLabel}</button>`}
         </div>
       </div>`;
     const close = () => {
@@ -70,6 +70,7 @@
       if (e.target === backdrop || e.target.closest('[data-msi-close]')) close();
     });
     document.body.append(style, backdrop);
+    backdrop.querySelector('[data-msi-action]')?.addEventListener('click', () => { close(); onAction?.(); });
     requestAnimationFrame(() => backdrop.classList.add('in'));
   }
 
@@ -121,13 +122,49 @@
     return 'guide';
   }
 
-  /* ------------------------------ الأزرار: تنزيل مباشر ------------------------------ */
+  /* ------------------------------ الأزرار: تنزيل مباشر مع مسارات بديلة ------------------------------ */
+  /* نجريب توفر الملف على الخادم؛ إن فشل المسار الرئيسي جرّبنا مسار الملف المباشر */
+  async function probe(url) {
+    try {
+      const ctrl = new AbortController();
+      const res = await fetch(url, { headers: { Range: 'bytes=0-0' }, cache: 'no-store', signal: ctrl.signal });
+      const ok = res.ok || res.status === 206;
+      res.body?.cancel?.().catch?.(() => {});
+      ctrl.abort();
+      return ok;
+    } catch { return false; }
+  }
+
+  async function resolveUrl(urls) {
+    for (const u of urls) if (await probe(u)) return u;
+    return null;
+  }
+
   function bindButtons() {
     const phoneBtn = document.getElementById('dl-phone');
     if (phoneBtn) {
       // زر الهاتف: تنزيل APK مباشرة (href يشير إلى الملف) + دليل التثبيت
-      phoneBtn.addEventListener('click', () => {
+      resolveUrl(['download/apk', 'downloads/MontageStudio.apk']).then((u) => {
+        if (u) phoneBtn.setAttribute('href', u);
+        phoneBtn.dataset.ready = u ? '1' : '0';
+      });
+      phoneBtn.addEventListener('click', (e) => {
         if (installed || isStandalone()) { window.location.href = phoneBtn.dataset.fallback || 'mobile.html'; return; }
+        if (phoneBtn.dataset.ready === '0') {
+          e.preventDefault();
+          showGuide({
+            title: 'تعذّر العثور على ملف APK',
+            subtitle: 'يبدو أنك تفتح الصفحة من نسخة قديمة مخبّأة أو من دون خادم. حدّث الصفحة ثم أعد المحاولة:',
+            steps: [
+              'اضغط <b>«تحديث الصفحة»</b> بالأسفل — سيجلب المتصفح النسخة الأحدث',
+              'تأكد أن الموقع يعمل عبر الخادم (وليس بفتح الملف مباشرة)',
+              'ثم اضغط <b>«تثبيت نسخة الهاتف»</b> مجددًا',
+            ],
+            actionLabel: 'تحديث الصفحة',
+            onAction: () => window.location.reload(),
+          });
+          return;
+        }
         showGuide({
           title: 'جارٍ تنزيل تطبيق الهاتف…',
           subtitle: 'بعد اكتمال التنزيل ثبّته مثل أي تطبيق:',
@@ -143,8 +180,25 @@
 
     const pcBtn = document.getElementById('dl-pc');
     if (pcBtn) {
+      resolveUrl(['download/exe', 'dist/MontageStudio-win64.exe']).then((u) => {
+        if (u) pcBtn.setAttribute('href', u);
+        pcBtn.dataset.ready = u ? '1' : '0';
+      });
       pcBtn.addEventListener('click', (e) => {
-        if (!isMobileDevice()) return; // على الكمبيوتر: التنزيل يجري عبر href مباشرة
+        if (!isMobileDevice()) {
+          // على الكمبيوتر: إن لم يوجد الملف نوضح السبب بدل رابط ميت
+          if (pcBtn.dataset.ready === '0') {
+            e.preventDefault();
+            showGuide({
+              title: 'تعذّر العثور على ملف EXE',
+              subtitle: 'النسخة المخصصة للكمبيوتر غير متاحة على هذا الخادم حاليًا.',
+              steps: ['حدّث الصفحة وأعد المحاولة', 'أو استخدم نسخة الويب الكاملة من الأسفل'],
+              actionLabel: 'تحديث الصفحة',
+              onAction: () => window.location.reload(),
+            });
+          }
+          return; // غير ذلك: التنزيل يجري عبر href مباشرة
+        }
         // من هاتف: نوضح أن EXE لويندوز ونقترح نسخة الهاتف
         e.preventDefault();
         showGuide({

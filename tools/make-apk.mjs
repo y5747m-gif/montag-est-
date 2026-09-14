@@ -181,8 +181,8 @@ for (const d of [
 fs.writeFileSync(path.join(PROJECT, 'AndroidManifest.xml'), `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="${PKG}"
-    android:versionCode="3"
-    android:versionName="1.2">
+    android:versionCode="4"
+    android:versionName="1.3">
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="29" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -258,8 +258,8 @@ usesFramework:
   tag: null
 version: 2.9.3
 versionInfo:
-  versionCode: '3'
-  versionName: '1.2'
+  versionCode: '4'
+  versionName: '1.3'
 `);
 
 // الأيقونات: تقليدية (أندرويد 5-7) + طبقات Adaptive (أندرويد 8+)
