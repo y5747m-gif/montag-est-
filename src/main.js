@@ -383,7 +383,8 @@ class App {
       layer.props.text.value = 'نصّك هنا';
       layer.props.fill.value = this.fillColor;
       layer.transform.position.value = position ? { ...position } : { x: comp.width / 2, y: comp.height / 2 };
-      layer.transform.anchor.value = { x: comp.width / 2, y: comp.height / 2 };
+      // المرساة = موضع النص نفسه حتى يظهر النص حيث نقر المستخدم تمامًا
+      layer.transform.anchor.value = { ...layer.transform.position.value };
       layer.outPoint = Math.min(comp.duration, start + comp.fps * 5);
     } else if (type === 'shape') {
       layer.props.kind.value = this.tool === 'ellipse' ? 'ellipse' : this.tool === 'star' ? 'star' : this.tool === 'polygon' ? 'polygon' : 'rect';
@@ -401,7 +402,7 @@ class App {
       layer.outPoint = Math.min(comp.duration, start + comp.fps * 5);
     } else if (type === 'particles' || type === 'visualizer') {
       layer.props.color.value = this.fillColor;
-      layer.transform.position.value = { x: comp.width / 2, y: comp.height / 2 };
+      layer.transform.position.value = position ? { ...position } : { x: comp.width / 2, y: comp.height / 2 };
       layer.outPoint = Math.min(comp.duration, start + comp.fps * 8);
       const asset = this.store.project.assets.find((a) => a.kind === 'audio' || a.kind === 'video');
       if (asset && type === 'visualizer' && layer.props.assetId) layer.props.assetId.value = asset.id;

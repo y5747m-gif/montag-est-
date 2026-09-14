@@ -73,7 +73,11 @@ export function installShortcuts(app) {
 
     /* ---------- مفاتيح عادية ---------- */
     switch (key) {
-      case ' ': e.preventDefault(); app.viewer.togglePlay(); return;
+      case ' ':
+        e.preventDefault();
+        app.viewer.spaceHeld = true;
+        if (!e.repeat) app.viewer.togglePlay();
+        return;
       case 'Home': e.preventDefault(); store.gotoStart(); app.timeline.rebuild(); return;
       case 'End': e.preventDefault(); store.gotoEnd(); app.timeline.rebuild(); return;
       case 'PageUp': e.preventDefault(); store.stepFrame(e.shiftKey ? -10 : -1); app.timeline.updatePlayhead(); return;
@@ -116,6 +120,10 @@ export function installShortcuts(app) {
     }
     if (PROP_KEYS[lower]) { app.selectPropertyShortcut(PROP_KEYS[lower]); return; }
     if (TOOL_KEYS[lower]) { app.setTool(TOOL_KEYS[lower]); return; }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    if (e.key === ' ') app.viewer.spaceHeld = false;
   });
 
   window.addEventListener('wheel', (e) => {

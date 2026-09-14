@@ -215,7 +215,7 @@ body.resizing * { pointer-events: none; }
   background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--radius-sm);
   padding: 2px 4px; font-size: 11px; outline: none; max-width: 120px;
 }
-.mini-range { width: 90px; accent-color: var(--accent); }
+.mini-range { width: 90px; min-width: 48px; flex: 0 1 auto; accent-color: var(--accent); }
 .mini-field {
   display: inline-flex; align-items: center; gap: 4px; color: var(--txt-2); font-size: 11px;
   background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); padding: 1px 5px;
@@ -436,6 +436,63 @@ body.resizing * { pointer-events: none; }
 .toast.ok { border-inline-start-color: var(--green); }
 .toast.warn { border-inline-start-color: var(--amber); }
 .toast.err { border-inline-start-color: var(--red); }
+
+/* ============================ شريط التشغيل (العارض) ============================ */
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--line-soft);
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+.transport-left, .transport-center, .transport-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.transport-left { flex: 0 1 auto; }
+.transport-center { flex: 0 0 auto; margin-inline: auto; }
+.transport-right { flex: 0 1 auto; margin-inline-start: auto; }
+.transport .tc-sep { color: var(--txt-dim); font-size: 11px; }
+.transport .tb-btn.play {
+  width: 34px; height: 26px; display: grid; place-items: center;
+  background: var(--bg-3); border: 1px solid var(--line); border-radius: 6px; color: var(--txt-0);
+}
+.transport .tb-btn.play:hover { border-color: var(--accent); color: var(--accent); }
+.transport .tb-btn.play.on { color: var(--green); border-color: var(--green); }
+.transport .tb-btn svg { width: 14px; height: 14px; }
+.transport .mini-field { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--txt-dim); white-space: nowrap; }
+.transport .mini-field input {
+  width: 46px; background: var(--bg-0); border: 1px solid var(--line-soft); border-radius: 4px;
+  padding: 2px 4px; font-family: var(--font-num); font-size: 11px; color: var(--txt-1); outline: none; min-width: 0;
+}
+.transport .mini-field input:focus { border-color: var(--accent); }
+
+/* ============================ تكيّف اللابتوب والشاشات الضيقة ============================ */
+@media (max-width: 1560px) {
+  .tb-link span { display: none; }
+  .brand-ver { display: none; }
+  .menu-btn { padding: 5px 7px; }
+}
+@media (max-width: 1400px) {
+  .brand-name { display: none; }
+  .ws-tab { padding: 3px 7px; font-size: 11px; }
+  #btn-export span { display: none; }
+  #viewer-zoom { max-width: 86px; }
+}
+@media (max-width: 1240px) {
+  .workspace-tabs { display: none; }
+  .timecode-input { width: 80px !important; }
+  .timecode-input.dim { width: 64px !important; }
+  .transport .mini-field.hide-narrow { display: none; }
+  #viewer-res { display: none; }
+  .tl-footer .tl-info { display: none; }
+}
 
 /* ============================ شريط الحالة ============================ */
 .statusbar {

@@ -460,6 +460,56 @@ async function appTests() {
   await new Promise((r) => setTimeout(r, 30));
   ok(store.comp.layers.length > 1, 'تطبيق قالب من اللوحة يعمل');
 
+  section('أدوات احترافية — موجة 7');
+  // 1) أداة القلم ترسم قناعًا دون انهيار (كانت ترمي ReferenceError)
+  store.select([store.comp.layers[0].id]);
+  app.setTool('pen');
+  const masksBefore = store.comp.layers[0].masks.length;
+  let penDrawOk = true;
+  try {
+    app.viewer.startMaskDraw({ x: 100, y: 100 }, new window.MouseEvent('pointerdown', { bubbles: true }));
+    const cv = document.getElementById('viewer-canvas');
+    cv.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, detail: 1, clientX: 150, clientY: 120 }));
+    cv.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, detail: 1, clientX: 200, clientY: 180 }));
+    cv.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, detail: 2, clientX: 200, clientY: 180 }));
+  } catch (e) { penDrawOk = false; failures.push(`pen: ${e.message}`); }
+  ok(penDrawOk, 'أداة القلم ترسم قناعًا وتُنهى بالنقر المزدوج بلا أخطاء');
+  ok(store.comp.layers[0].masks.length === masksBefore + 1, 'القناع المرسوم يُحفظ على الطبقة');
+  eq(app.tool, 'select', 'العودة لأداة التحديد بعد إنهاء القناع');
+
+  // 2) الأدوات المساعدة تنشئ طبقتها فورًا وتعيد أداة التحديد
+  const layersBeforeInstant = store.comp.layers.length;
+  click(document.querySelector('.tool-btn[data-tool="particles"]'));
+  ok(store.comp.layers.length === layersBeforeInstant + 1, 'أداة الجزيئات تُنشئ الطبقة فورًا');
+  eq(app.tool, 'select', 'الأدوات المساعدة تعيد أداة التحديد تلقائيًا');
+
+  // 3) hitTest يحترم زمن الطبقة (كان يقارن الإحداثية بالإطار)
+  const solid = app.createLayerOfType('solid');
+  solid.inPoint = 0;
+  solid.outPoint = 150;
+  store.setProp(solid.id, 'transform.position', { x: 30, y: 30 }, {});
+  const others = store.comp.layers.filter((l) => l.id !== solid.id);
+  const wasEnabled = others.map((l) => l.enabled);
+  others.forEach((l) => { l.enabled = false; });
+  const savedFrame = store.playhead;
+  store.playhead = 5;
+  eq(app.viewer.hitTest({ x: 30, y: 30 })?.id, solid.id, 'hitTest يجد الطبقة داخل مدتها الزمني');
+  store.playhead = solid.outPoint + 10;
+  eq(app.viewer.hitTest({ x: 30, y: 30 }), null, 'hitTest يتجاهل الطبقة بعد نهايتها');
+  store.playhead = savedFrame;
+  others.forEach((l, i) => { l.enabled = wasEnabled[i]; });
+  store.removeLayers([solid.id]);
+
+  // 4) التكبير المثبّت على المؤشر + السحب بالمسطرة
+  let zoomAtOk = true;
+  try { app.viewer.zoomAt(1, 400, 300); } catch (e) { zoomAtOk = false; failures.push(`zoomAt: ${e.message}`); }
+  ok(zoomAtOk && Math.abs(app.viewer.zoom - 1) < 1e-6, 'zoomAt يكبّر نحو نقطة المؤشر');
+  document.dispatchEvent(new window.KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+  ok(app.viewer.spaceHeld === true, 'الضغط على المسطرة يفعّل وضع السحب');
+  app.viewer.stop();
+  document.dispatchEvent(new window.KeyboardEvent('keyup', { key: ' ', bubbles: true }));
+  ok(app.viewer.spaceHeld === false, 'رفع المسطرة ينهي وضع السحب');
+
   section('القوالب الجاهزة');
   const presets = await load('src/core/presets.js');
   const presetErrors = [];

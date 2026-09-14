@@ -90,7 +90,12 @@ export class Viewer {
     this.canvas.height = Math.max(2, Math.round(comp.height * res));
     this.canvas.style.width = `${dispW}px`;
     this.canvas.style.height = `${dispH}px`;
-    this.canvas.style.margin = '0';
+    this.canvas.style.margin = 'auto';
+    // طبقة أدوات التحديد تغطي كامل المساحة القابلة للتمرير
+    if (this.overlay) {
+      this.overlay.style.width = `${Math.max(bodyRect.width, dispW + 24)}px`;
+      this.overlay.style.height = `${Math.max(bodyRect.height, dispH + 24)}px`;
+    }
     if (initial) this.updateBadge();
     this.requestRender();
     this.renderGizmos();
@@ -233,9 +238,7 @@ export class Viewer {
     const comp = this.comp;
     if (!comp) return;
     const rect = this.canvas.getBoundingClientRect();
-    const bodyRect = this.bodyEl.getBoundingClientRect();
-    const offsetX = rect.left - bodyRect.left;
-    const offsetY = rect.top - bodyRect.top;
+    const { ox: offsetX, oy: offsetY } = this.canvasOffsetInOverlay();
     // إرشادات الأمان والشبكة
     if (this.store.viewer.showGuides) {
       const safe = el('div', {
@@ -363,6 +366,13 @@ export class Viewer {
     }
   }
 
+  /* إزاحة الكانفس داخل طبقة التظليل — صحيحة تحت أي تمرير/تكبير */
+  canvasOffsetInOverlay() {
+    const r = this.canvas.getBoundingClientRect();
+    const o = this.overlay.getBoundingClientRect();
+    return { ox: r.left - o.left, oy: r.top - o.top, ow: o.width, oh: o.height };
+  }
+
   /* --------------------------- التفاعل --------------------------- */
   addEventListener() {
     const canvas = this.canvas;
@@ -377,11 +387,12 @@ export class Viewer {
     });
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
+      e.stopPropagation();
       if (e.ctrlKey || e.metaKey) {
         const dir = e.deltaY < 0 ? 1 : -1;
         const idx = ZOOM_STEPS.findIndex((z) => z >= this.zoom - 0.001);
         const next = ZOOM_STEPS[clamp(idx + dir, 0, ZOOM_STEPS.length - 1)];
-        this.setZoom(next);
+        this.zoomAt(next, e.clientX, e.clientY);
       } else if (e.shiftKey) {
         this.bodyEl.scrollLeft += e.deltaY;
       } else {
@@ -401,7 +412,8 @@ export class Viewer {
     const layers = [...comp.layers].reverse();
     for (const layer of layers) {
       if (!layer.enabled) continue;
-      if (p.x < layer.inPoint || p.x > layer.outPoint) continue;
+      const t = this.store.playhead;
+      if (t < layer.inPoint || t > layer.outPoint) continue;
       const info = this.transformedCorners(layer);
       const xs = info.corners.map((q) => q.x), ys = info.corners.map((q) => q.y);
       const pad = 2;
@@ -417,14 +429,14 @@ export class Viewer {
     // أدوات الرسم
     if (tool === 'pen') { this.startMaskDraw(p, e); return; }
     if (['rect', 'ellipse', 'polygon', 'star', 'text', 'solid'].includes(tool)) { this.startCreateLayer(p, e); return; }
-    if (tool === 'hand' || e.button === 1) {
+    if (tool === 'hand' || e.button === 1 || (e.button === 0 && this.spaceHeld)) {
       this.startPan(e);
       return;
     }
     if (tool === 'zoom') {
       const dir = e.altKey ? -1 : 1;
       const idx = ZOOM_STEPS.findIndex((z) => z >= this.zoom - 0.001);
-      this.setZoom(ZOOM_STEPS[clamp(idx + dir, 0, ZOOM_STEPS.length - 1)]);
+      this.zoomAt(ZOOM_STEPS[clamp(idx + dir, 0, ZOOM_STEPS.length - 1)], e.clientX, e.clientY);
       return;
     }
     // تحديد / تحريك
@@ -476,16 +488,21 @@ export class Viewer {
       };
       const dx = p.x - origin.x;
       const dy = p.y - origin.y;
+      const axisLock = ev.shiftKey && tool !== 'rotate';
+      const dd = { x: p.x - origin.x, y: p.y - origin.y };
+      if (axisLock && Math.abs(dd.x) < Math.abs(dd.y)) dd.x = 0; else if (axisLock) dd.y = 0;
       start.forEach((s) => {
         if (tool === 'rotate') {
           const a = Math.atan2(p.y - s.pos.y, p.x - s.pos.x) * 180 / Math.PI + 90;
-          store.setProp(s.layer.id, 'transform.rotation', Math.round(a), { coalesce: 'rotate', frame });
+          // Shift = محاذاة بخطوات 15 درجة
+          const snapped = ev.shiftKey ? Math.round(a / 15) * 15 : Math.round(a);
+          store.setProp(s.layer.id, 'transform.rotation', snapped, { coalesce: 'rotate', frame });
         } else if (tool === 'pan-behind') {
           const anchor = propValueAt(s.layer.transform.anchor, frame) || { x: 0, y: 0 };
-          store.setProp(s.layer.id, 'transform.anchor', { x: Math.round(anchor.x + dx), y: Math.round(anchor.y + dy) }, { coalesce: 'anchor', frame });
-          store.setProp(s.layer.id, 'transform.position', { x: Math.round(s.pos.x + dx), y: Math.round(s.pos.y + dy) }, { coalesce: 'panbehind', frame });
+          store.setProp(s.layer.id, 'transform.anchor', { x: Math.round(anchor.x + dd.x), y: Math.round(anchor.y + dd.y) }, { coalesce: 'anchor', frame });
+          store.setProp(s.layer.id, 'transform.position', { x: Math.round(s.pos.x + dd.x), y: Math.round(s.pos.y + dd.y) }, { coalesce: 'panbehind', frame });
         } else {
-          store.setProp(s.layer.id, 'transform.position', { x: Math.round(s.pos.x + dx), y: Math.round(s.pos.y + dy) }, { coalesce: 'move', frame });
+          store.setProp(s.layer.id, 'transform.position', { x: Math.round(s.pos.x + dd.x), y: Math.round(s.pos.y + dd.y) }, { coalesce: 'move', frame });
         }
       });
       this.renderGizmos();
@@ -500,16 +517,16 @@ export class Viewer {
   }
 
   startMarquee(e) {
-    const bodyRect = this.bodyEl.getBoundingClientRect();
-    const rect = this.canvas.getBoundingClientRect();
-    const startX = e.clientX - bodyRect.left + this.bodyEl.scrollLeft;
-    const startY = e.clientY - bodyRect.top + this.bodyEl.scrollTop;
+    const ovl0 = this.overlay.getBoundingClientRect();
+    const startX = e.clientX - ovl0.left;
+    const startY = e.clientY - ovl0.top;
     const box = el('div', { class: 'marquee-box' });
     this.overlay.appendChild(box);
     const comp = this.comp;
     const move = (ev) => {
-      const x = ev.clientX - bodyRect.left + this.bodyEl.scrollLeft;
-      const y = ev.clientY - bodyRect.top + this.bodyEl.scrollTop;
+      const { ox, oy } = this.canvasOffsetInOverlay();
+      const x = ev.clientX - this.overlay.getBoundingClientRect().left;
+      const y = ev.clientY - this.overlay.getBoundingClientRect().top;
       const left = Math.min(startX, x), top = Math.min(startY, y);
       box.style.left = `${left}px`;
       box.style.top = `${top}px`;
@@ -519,13 +536,14 @@ export class Viewer {
     const up = (ev) => {
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
-      const x = ev.clientX - bodyRect.left + this.bodyEl.scrollLeft;
-      const y = ev.clientY - bodyRect.top + this.bodyEl.scrollTop;
+      const ovl = this.overlay.getBoundingClientRect();
+      const x = ev.clientX - ovl.left;
+      const y = ev.clientY - ovl.top;
       const left = Math.min(startX, x), top = Math.min(startY, y);
       const w = Math.abs(x - startX), h = Math.abs(y - startY);
       box.remove();
       if (w < 4 && h < 4) { this.store.deselectAll(); return; }
-      const padL = rect.left - bodyRect.left, padT = rect.top - bodyRect.top;
+      const { ox: padL, oy: padT } = this.canvasOffsetInOverlay();
       const sel = [];
       comp.layers.forEach((layer) => {
         const info = this.transformedCorners(layer);
@@ -550,12 +568,11 @@ export class Viewer {
     const preview = el('div', { class: 'marquee-box' });
     this.overlay.appendChild(preview);
     const rect = this.canvas.getBoundingClientRect();
-    const bodyRect = this.bodyEl.getBoundingClientRect();
     const move = (ev) => {
       const q = this.compPointFromEvent(ev);
-      const left = bodyRect.left + Math.min(startP.x, q.x) / comp.width * rect.width - bodyRect.left;
-      preview.style.left = `${((Math.min(startP.x, q.x)) / comp.width) * rect.width + (rect.left - bodyRect.left)}px`;
-      preview.style.top = `${((Math.min(startP.y, q.y)) / comp.height) * rect.height + (rect.top - bodyRect.top)}px`;
+      const { ox, oy } = this.canvasOffsetInOverlay();
+      preview.style.left = `${((Math.min(startP.x, q.x)) / comp.width) * rect.width + ox}px`;
+      preview.style.top = `${((Math.min(startP.y, q.y)) / comp.height) * rect.height + oy}px`;
       preview.style.width = `${(Math.abs(q.x - startP.x) / comp.width) * rect.width}px`;
       preview.style.height = `${(Math.abs(q.y - startP.y) / comp.height) * rect.height}px`;
     };
@@ -578,13 +595,15 @@ export class Viewer {
   }
 
   startMaskDraw(p, e) {
+    if (this.maskDrawActive) return; // النقرات التالية تضيف نقاطًا للقناع الحالي
     const layer = this.store.primaryLayer;
     if (!layer) { toast('حدّد طبقة أولًا لرسم قناع', 'warn'); return; }
+    this.maskDrawActive = true;
     const mask = this.store.addMask(layer.id, [], 'add');
     const draw = el('svg', { class: 'mask-pen-overlay' });
     this.overlay.appendChild(draw);
+    this.maskDraw = draw;
     const rect = this.canvas.getBoundingClientRect();
-    const bodyRect = this.bodyEl.getBoundingClientRect();
     const toLocal = (ev) => {
       const q = this.compPointFromEvent(ev);
       return { x: q.x, y: q.y };
@@ -592,10 +611,9 @@ export class Viewer {
     const points = [{ x: p.x, y: p.y, inX: 0, inY: 0, outX: 0, outY: 0 }];
     const redraw = () => {
       const scale = rect.width / this.comp.width;
-      const ox = rect.left - bodyRect.left;
-      const oy = rect.top - bodyRect.top;
-      draw.setAttribute('width', String(bodyRect.width));
-      draw.setAttribute('height', String(bodyRect.height));
+      const { ox, oy, ow, oh } = this.canvasOffsetInOverlay();
+      draw.setAttribute('width', String(ow));
+      draw.setAttribute('height', String(oh));
       draw.innerHTML = `<polyline fill="rgba(74,157,255,.12)" stroke="#4a9dff" stroke-width="1.4"
         points="${points.map((q) => `${ox + q.x * scale},${oy + q.y * scale}`).join(' ')}"/>`;
     };
@@ -613,14 +631,17 @@ export class Viewer {
       const q = toLocal(ev);
       redraw();
       const scale = rect.width / this.comp.width;
-      const ox = rect.left - bodyRect.left;
-      const oy = rect.top - bodyRect.top;
+      const { ox, oy } = this.canvasOffsetInOverlay();
       draw.innerHTML += `<line x1="${ox + points[points.length - 1].x * scale}" y1="${oy + points[points.length - 1].y * scale}" x2="${ox + q.x * scale}" y2="${oy + q.y * scale}" stroke="#4a9dff" stroke-width="1" stroke-dasharray="3 3"/>`;
     };
     const finish = () => {
+      if (!this.maskDrawActive) return;
+      this.maskDrawActive = false;
       window.removeEventListener('pointermove', move);
-      canvas.removeEventListener('pointerdown', click);
+      window.removeEventListener('keydown', finishEsc, true);
+      this.canvas.removeEventListener('pointerdown', click);
       draw.remove();
+      this.maskDraw = null;
       if (points.length >= 3) {
         this.store.updateMask(layer.id, mask.id, { points });
         toast('تم إنشاء القناع', 'ok');
@@ -629,8 +650,10 @@ export class Viewer {
       }
       this.app.setTool('select');
     };
+    const finishEsc = (ev2) => { if (ev2.key === 'Escape') { window.removeEventListener('keydown', finishEsc, true); finish(); } };
+    window.addEventListener('keydown', finishEsc, true);
     window.addEventListener('pointermove', move);
-    canvas.addEventListener('pointerdown', click);
+    this.canvas.addEventListener('pointerdown', click);
   }
 
   /** إلغاء أي تفاعل جارٍ (سحب، رسم قناع، مستطيل تحديد) */
@@ -677,6 +700,22 @@ export class Viewer {
     const sel = document.getElementById('viewer-zoom');
     if (sel) sel.value = [...sel.options].some((o) => o.value === String(this.zoom)) ? String(this.zoom) : 'fit';
     this.layout();
+  }
+
+  /* تكبير/تصغير مع تثبيت نقطة التركيب الموجودة تحت المؤشر (سلوك احترافي) */
+  zoomAt(z, clientX, clientY) {
+    const comp = this.comp;
+    if (!comp) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const cx = ((clientX - rect.left) / rect.width) * comp.width;
+    const cy = ((clientY - rect.top) / rect.height) * comp.height;
+    const prev = this.zoom;
+    this.setZoom(z);
+    if (Math.abs(this.zoom - prev) < 1e-6) return;
+    const rect2 = this.canvas.getBoundingClientRect();
+    this.bodyEl.scrollLeft += rect2.left - (clientX - cx * this.zoom);
+    this.bodyEl.scrollTop += rect2.top - (clientY - cy * this.zoom);
+    this.renderGizmos();
   }
 
   fit() {

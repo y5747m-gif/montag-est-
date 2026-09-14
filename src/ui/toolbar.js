@@ -34,6 +34,9 @@ const TOOLS = {
   ],
 };
 
+// أدوات تُنشئ طبقتها فورًا عند الضغط (سلوك احترافي مثل After Effects)
+const INSTANT_TOOLS = new Set(['adjustment', 'null', 'camera', 'light', 'particles', 'visualizer']);
+
 export function buildToolbar(app) {
   const host = document.getElementById('toolbar');
   if (!host) return;
@@ -41,16 +44,24 @@ export function buildToolbar(app) {
     const groupEl = host.querySelector(`[data-toolgroup="${group}"]`);
     if (!groupEl) return;
     tools.forEach(([id, iconName, title]) => {
+      const activate = () => {
+        if (INSTANT_TOOLS.has(id)) {
+          const layer = app.createLayerFromTool(id);
+          toast(`تمت إضافة «${layer.name}» على مسار التشغيل`, 'ok');
+        } else {
+          app.setTool(id);
+        }
+      };
       const btn = el('button', {
         class: `tool-btn ${app.tool === id ? 'active' : ''}`,
         dataset: { tool: id },
         title,
-        onclick: () => app.setTool(id),
+        onclick: activate,
         oncontextmenu: (e) => {
           e.preventDefault();
           showContextMenu([
             { label: title, type: 'title' },
-            { label: 'تفعيل', action: () => app.setTool(id) },
+            { label: 'تفعيل', action: activate },
           ], { x: e.clientX, y: e.clientY });
         },
       }, [icon(iconName, 17)]);
