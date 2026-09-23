@@ -11,6 +11,7 @@ import { showContextMenu } from './menu.js';
 const TOOLS = {
   main: [
     ['select', 'i-select', 'أداة التحديد (V)'],
+    ['razor', 'i-razor', 'أداة المشرط والقص اللحظي (C)'],
     ['hand', 'i-hand', 'تحريك العرض (H)'],
     ['zoom', 'i-zoom', 'تكبير/تصغير (Z)'],
     ['rotate', 'i-rotate', 'أداة التدوير (W)'],
@@ -105,6 +106,10 @@ export function buildMenus(app) {
         { label: 'فتح مشروع…', shortcut: 'Ctrl+O', icon: 'i-open', action: () => app.openProjectFile() },
         { label: 'استيراد وسائط…', shortcut: 'Ctrl+I', icon: 'i-import', action: () => app.openImportDialog() },
         { type: 'sep' },
+        { label: 'معرض التطبيق والموقع…', icon: 'i-image', action: () => app.openShowcase() },
+        { label: 'تسجيل تعليق صوتي (Voiceover)…', icon: 'i-mic', action: () => app.openVoiceover() },
+        { label: 'تسجيل الشاشة والكاميرا…', icon: 'i-video', action: () => app.openScreenRecorder() },
+        { type: 'sep' },
         { label: 'حفظ المشروع (.mgeproj)', shortcut: 'Ctrl+S', icon: 'i-save', action: () => { store.saveToFile(); toast('تم حفظ المشروع', 'ok'); } },
         { label: 'حفظ نسخة JSON', action: () => {
           const blob = new Blob([store.serialize({ pretty: true })], { type: 'application/json' });
@@ -135,6 +140,7 @@ export function buildMenus(app) {
         { label: 'لصق', shortcut: 'Ctrl+V', disabled: !store.clipboard, action: () => store.pasteLayers() },
         { label: 'مضاعفة', shortcut: 'Ctrl+D', disabled: !store.selection.layerIds.length, action: () => store.duplicateLayers(store.selection.layerIds) },
         { label: 'حذف', shortcut: 'Del', icon: 'i-trash', disabled: !store.selection.layerIds.length, action: () => store.removeLayers(store.selection.layerIds) },
+        { label: 'حذف مع إزاحة (Ripple Delete)', shortcut: 'Shift+Del', disabled: !store.selection.layerIds.length, action: () => store.rippleDelete(store.selection.layerIds) },
         { type: 'sep' },
         { label: 'تحديد الكل', shortcut: 'Ctrl+A', action: () => store.selectAll() },
         { label: 'إلغاء التحديد', shortcut: 'Ctrl+Shift+A', action: () => store.deselectAll() },
@@ -256,6 +262,7 @@ export function buildMenus(app) {
     {
       label: 'مساعدة',
       items: () => [
+        { label: 'معرض وتصميم التطبيق والموقع', icon: 'i-image', action: () => app.openShowcase() },
         { label: 'اختصارات لوحة المفاتيح', shortcut: 'F1', icon: 'i-settings', action: () => shortcutsDialog() },
         { label: 'حول البرنامج', icon: 'i-comp', action: () => aboutDialog() },
         { label: 'دليل سريع', icon: 'i-effects', action: () => app.showQuickGuide() },

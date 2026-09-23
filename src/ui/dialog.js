@@ -28,6 +28,7 @@ export function openDialog({
   api = {
     dialog,
     body: dialog.querySelector('.dialog-body'),
+    bodyEl: dialog.querySelector('.dialog-body'),
     close(result) {
       backdrop.remove();
       dialog.remove();

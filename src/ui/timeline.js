@@ -172,6 +172,17 @@ export class Timeline {
       oncontextmenu: (e) => { e.preventDefault(); if (!this.store.isSelected(layer.id)) this.store.select([layer.id]); this.clipMenu(e, layer); },
       onpointerdown: (e) => {
         if (e.button !== 0) return;
+        if (this.app.tool === 'razor') {
+          e.stopPropagation();
+          const rect = clip.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const clickedFrame = Math.round(layer.inPoint + (clickX / z));
+          if (clickedFrame > layer.inPoint && clickedFrame < layer.outPoint) {
+            this.store.splitLayersAt(clickedFrame, [layer.id]);
+            toast(`تم قص "${layer.name}" عند الإطار ${clickedFrame}`, 'ok');
+          }
+          return;
+        }
         if (e.target.classList.contains('clip-edge') || e.target.classList.contains('fade-handle')) return;
         if (!this.store.isSelected(layer.id)) this.store.select([layer.id], { add: e.shiftKey });
         this.startClipDrag(e, layer, 'move');
@@ -687,6 +698,7 @@ export class Timeline {
       { label: 'مضاعفة', icon: 'i-copy', shortcut: 'Ctrl+D', action: () => this.store.duplicateLayers([layer.id]) },
       { label: 'تقسيم عند المؤشر', icon: 'i-razor', shortcut: 'Ctrl+Shift+D', action: () => this.store.splitLayersAt(this.store.playhead, this.store.selection.layerIds.length ? this.store.selection.layerIds : [layer.id]) },
       { label: 'حذف', icon: 'i-trash', shortcut: 'Del', action: () => this.store.removeLayers([layer.id]) },
+      { label: 'حذف مع إزاحة (Ripple Delete)', icon: 'i-trash', shortcut: 'Shift+Del', action: () => this.store.rippleDelete([layer.id]) },
       { type: 'sep' },
       {
         label: 'نمط الدمج',

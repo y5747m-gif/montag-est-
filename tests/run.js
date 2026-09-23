@@ -237,6 +237,16 @@ async function unitTests() {
   // نبني ZIP بسيطًا بالطريقة نفسها التي يستخدمها المُصدِّر
   const blob = new Blob([Buffer.from([0x50, 0x4b, 0x03, 0x04]), zipStr]);
   ok(blob.size > 4, 'بناء كائنات Blob للتصدير');
+
+  section('نظام الانتقالات المونتاجية');
+  const transitions = await load('src/core/transitions.js');
+  ok(transitions.TRANSITIONS.length >= 10, `عدد الانتقالات المونتاجية (${transitions.TRANSITIONS.length})`);
+  ok(transitions.TRANSITIONS.every((t) => t.id && t.name.ar && t.effectType), 'سلامة تعريفات الانتقالات');
+
+  section('مكتبة المؤثرات الصوتية');
+  const sfx = await load('src/media/soundfx.js');
+  ok(sfx.SOUND_EFFECTS.length >= 8, `عدد المؤثرات الصوتية (${sfx.SOUND_EFFECTS.length})`);
+  ok(sfx.SOUND_EFFECTS.every((s) => s.id && s.name && s.duration > 0), 'سلامة تعريفات الأصوات');
 }
 
 /* ============================ 2) اختبارات التطبيق ============================ */
@@ -471,6 +481,42 @@ async function appTests() {
   }
   ok(presetErrors.length === 0, `تطبيق كل القوالب (${presets.presetList().length})${presetErrors.length ? ` — ${presetErrors.slice(0, 3).join(' | ')}` : ''}`);
   ok(presets.presetList().length >= 10, 'عدد القوالب الجاهزة');
+
+  section('المونتاج المتقدم وأدوات الاستوديو');
+  const transitions = await load('src/core/transitions.js');
+  app.setTool('razor');
+  ok(app.tool === 'razor', 'أداة المشرط والقص اللحظي (Razor C)');
+  app.setTool('select');
+
+  // تغيير مقاس الفيديو والمنصات
+  app.setAspectRatio('1080x1920');
+  eq(store.comp.width, 1080, 'ضبط العرض على 1080 (تيك توك)');
+  eq(store.comp.height, 1920, 'ضبط الارتفاع على 1920 (تيك توك)');
+  app.setAspectRatio('1920x1080');
+
+  // تطبيق انتقال مونتاجي على الطبقة
+  const transTarget = store.comp.layers[0];
+  const fxCountBefore = transTarget.effects.length;
+  transitions.applyTransition(app, 'crossDissolve', transTarget);
+  ok(transTarget.effects.length > fxCountBefore, 'تطبيق انتقال مونتاجي على طبقة');
+
+  // حذف مع إزاحة (Ripple Delete)
+  const layerCountBeforeRipple = store.comp.layers.length;
+  const tempL = app.createLayerOfType('text', { inPoint: 30 });
+  tempL.outPoint = 60;
+  store.rippleDelete([tempL.id]);
+  eq(store.comp.layers.length, layerCountBeforeRipple, 'حذف مع إزاحة (Ripple Delete)');
+
+  // نافذة المعرض والموقع
+  let showcaseOk = true;
+  try {
+    app.openShowcase();
+    const scModal = document.querySelector('.showcase-dialog');
+    ok(!!scModal, 'نافذة المعرض والموقع تُفتح وتعرض صور الاستوديو');
+    document.querySelectorAll('#dialog-root .dialog-backdrop').forEach((n) => n.remove());
+    document.querySelectorAll('#dialog-root .dialog').forEach((n) => n.remove());
+  } catch (e) { showcaseOk = false; failures.push(`showcase: ${e.message}`); }
+  ok(showcaseOk, 'معرض التطبيق والموقع يعمل بنجاح');
 
   dom.window.close?.();
 }

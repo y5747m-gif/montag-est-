@@ -5,6 +5,8 @@ import { el, clear, icon } from './dom.js';
 import { prettyBytes, framesToTimecode, clamp } from '../core/util.js';
 import { EFFECTS, EFFECT_CATEGORIES } from '../core/effects.js';
 import { PRESETS } from '../core/presets.js';
+import { TRANSITIONS, applyTransition } from '../core/transitions.js';
+import { SOUND_EFFECTS, previewSoundEffect, addSoundEffectToTimeline } from '../media/soundfx.js';
 import { showContextMenu } from './menu.js';
 import { toast, toastOk, toastWarn } from './toast.js';
 import { promptDialog, confirmDialog, colorDialog } from './dialog.js';
@@ -17,6 +19,8 @@ export class ProjectPanel {
     this.listEl = document.getElementById('asset-list');
     this.effectsEl = document.getElementById('effects-browser');
     this.presetsEl = document.getElementById('presets-browser');
+    this.transitionsEl = document.getElementById('transitions-browser');
+    this.soundfxEl = document.getElementById('soundfx-browser');
     this.search = '';
     this.selectedAssetId = null;
     this.collapsedCategories = new Set();
@@ -30,6 +34,8 @@ export class ProjectPanel {
     this.store.on('jobs', () => this.renderAssets());
     this.renderEffects();
     this.renderPresets();
+    this.renderTransitions();
+    this.renderSoundFX();
     this.renderAssets();
   }
 
@@ -244,6 +250,54 @@ export class ProjectPanel {
       el('span', { text: preset.desc }),
     ])));
     host.appendChild(grid);
+  }
+
+  /* --------------------------- الانتقالات --------------------------- */
+  renderTransitions(filter = '') {
+    const host = this.transitionsEl;
+    if (!host) return;
+    clear(host);
+    host.appendChild(el('div', { class: 'form-hint', style: { padding: '6px 8px' }, text: 'انقر على انتقال لتطبيقه مباشرة على المقطع أو الطبقة المحددة في الخط الزمني.' }));
+    const filtered = TRANSITIONS.filter((t) => !filter || t.name.ar.toLowerCase().includes(filter) || t.name.en.toLowerCase().includes(filter));
+    const grid = el('div', { class: 'preset-grid', style: { padding: '4px 8px' } }, filtered.map((trans) => el('div', {
+      class: 'preset-card transition-card',
+      title: trans.desc.ar,
+      onclick: () => applyTransition(this.app, trans.id),
+    }, [
+      el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } }, [
+        icon(trans.icon, 14),
+        el('b', { text: trans.name.ar }),
+      ]),
+      el('span', { text: trans.desc.ar }),
+    ])));
+    host.appendChild(grid);
+  }
+
+  /* --------------------------- مؤثرات الصوت --------------------------- */
+  renderSoundFX() {
+    const host = this.soundfxEl;
+    if (!host) return;
+    clear(host);
+    host.appendChild(el('div', { class: 'form-hint', style: { padding: '6px 8px' }, text: 'مؤثرات صوتية مدمجة وسينمائية — معاينة بالنقر على زر التشغيل، وإدراج بالضغط على (+).' }));
+    const list = el('div', { class: 'sfx-browser-list', style: { padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: '6px' } }, SOUND_EFFECTS.map((sfx) => {
+      return el('div', { class: 'sfx-card' }, [
+        el('button', {
+          class: 'tb-btn ghost sm',
+          title: 'معاينة التأثير الصوتي',
+          onclick: () => previewSoundEffect(sfx.id),
+        }, [icon('i-play', 13)]),
+        el('div', { class: 'sfx-meta', style: { flex: '1' } }, [
+          el('b', { text: sfx.name, style: { display: 'block', fontSize: '12px' } }),
+          el('span', { text: `${sfx.desc} (${sfx.duration}ث)`, style: { fontSize: '11px', color: 'var(--txt-dim)' } }),
+        ]),
+        el('button', {
+          class: 'btn sm primary',
+          title: 'إدراج بالخط الزمني',
+          onclick: () => addSoundEffectToTimeline(this.app, sfx.id),
+        }, [icon('i-plus', 11), el('span', { text: 'إضافة' })]),
+      ]);
+    }));
+    host.appendChild(list);
   }
 }
 

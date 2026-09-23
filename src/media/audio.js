@@ -21,10 +21,43 @@ export class AudioEngine {
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
       this.master.gain.value = 1;
-      this.master.connect(this.ctx.destination);
+      try {
+        this.analyser = this.ctx.createAnalyser();
+        this.analyser.fftSize = 64;
+        this.master.connect(this.analyser);
+        this.analyser.connect(this.ctx.destination);
+      } catch {
+        this.master.connect(this.ctx.destination);
+      }
     }
     if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     return this.ctx;
+  }
+
+  setMasterVolume(val) {
+    const v = clamp(val, 0, 2);
+    if (this.master) this.master.gain.value = v;
+  }
+
+  getAudioLevels() {
+    if (!this.analyser || !this.playing) return { left: 0, right: 0, peak: 0, db: -100 };
+    const data = new Uint8Array(this.analyser.frequencyBinCount || 32);
+    try {
+      this.analyser.getByteTimeDomainData(data);
+    } catch { return { left: 0, right: 0, peak: 0, db: -100 }; }
+    let sum = 0;
+    let peak = 0;
+    for (let i = 0; i < data.length; i += 1) {
+      const s = (data[i] - 128) / 128;
+      const abs = Math.abs(s);
+      if (abs > peak) peak = abs;
+      sum += s * s;
+    }
+    const rms = Math.sqrt(sum / data.length);
+    const db = rms > 0.0001 ? 20 * Math.log10(rms) : -100;
+    const left = clamp(rms * 1.8, 0, 1);
+    const right = clamp((rms + (peak - rms) * 0.3) * 1.8, 0, 1);
+    return { left, right, peak: clamp(peak, 0, 1), db: Math.round(db) };
   }
 
   /** تشغيل كل طبقات الصوت بدءًا من إطار معيّن */

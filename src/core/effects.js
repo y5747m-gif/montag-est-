@@ -899,6 +899,223 @@ export const EFFECTS = {
       };
     },
   },
+
+  /* ------------------------------ انتقالات إضافية ------------------------------ */
+  dipToBlack: {
+    id: 'dipToBlack', cat: 'transition', dom: 'both',
+    name: { ar: 'تلاشٍ إلى السواد', en: 'Dip to Black' },
+    desc: { ar: 'هبوط سلس إلى السواد ثم صعود.', en: 'Fades smoothly to black.' },
+    params: [N('duration', { ar: 'المدة (fr)', en: 'Duration (frames)' }, 16, 2, 120, '', 1), S('mode', { ar: 'الوضع', en: 'Mode' }, 'both', [['both', 'دخول وخروج'], ['in', 'دخول فقط'], ['out', 'خروج فقط']])],
+    draw: (ctx, p, w, h, info) => {
+      const inPt = info.layer.inPoint;
+      const outPt = info.layer.outPoint;
+      const f = info.frame;
+      const dur = Math.max(1, p.duration);
+      let alpha = 0;
+      if (p.mode === 'in' || p.mode === 'both') {
+        if (f < inPt + dur) alpha = Math.max(alpha, 1 - (f - inPt) / dur);
+      }
+      if (p.mode === 'out' || p.mode === 'both') {
+        if (f > outPt - dur) alpha = Math.max(alpha, (f - (outPt - dur)) / dur);
+      }
+      if (alpha > 0.001) {
+        ctx.fillStyle = `rgba(0, 0, 0, ${clamp(alpha, 0, 1)})`;
+        ctx.fillRect(0, 0, w, h);
+      }
+    },
+  },
+  dipToWhite: {
+    id: 'dipToWhite', cat: 'transition', dom: 'both',
+    name: { ar: 'وميض أبيض', en: 'Dip to White / Flash' },
+    desc: { ar: 'وميض أبيض ناصع للانتقال بين المشاهد.', en: 'Bright white flash transition.' },
+    params: [N('duration', { ar: 'المدة (fr)', en: 'Duration (frames)' }, 14, 2, 120, '', 1), N('intensity', { ar: 'الشدّة', en: 'Intensity' }, 100, 0, 100, '%')],
+    draw: (ctx, p, w, h, info) => {
+      const inPt = info.layer.inPoint;
+      const outPt = info.layer.outPoint;
+      const f = info.frame;
+      const dur = Math.max(1, p.duration);
+      let alpha = 0;
+      if (f < inPt + dur) alpha = Math.max(alpha, 1 - (f - inPt) / dur);
+      if (f > outPt - dur) alpha = Math.max(alpha, (f - (outPt - dur)) / dur);
+      alpha *= (p.intensity / 100);
+      if (alpha > 0.001) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${clamp(alpha, 0, 1)})`;
+        ctx.fillRect(0, 0, w, h);
+      }
+    },
+  },
+  zoomTransition: {
+    id: 'zoomTransition', cat: 'transition', dom: 'both',
+    name: { ar: 'انتقال التكبير/التصغير', en: 'Zoom Transition' },
+    desc: { ar: 'تقريب أو تبعيد حركي سينمائي عند بداية أو نهاية اللقطة.', en: 'Dynamic zoom in or out transition.' },
+    params: [S('mode', { ar: 'النوع', en: 'Mode' }, 'in', [['in', 'تقريب للداخل (Zoom In)'], ['out', 'تبعيد للخارج (Zoom Out)']]), N('duration', { ar: 'المدة (fr)', en: 'Duration (frames)' }, 16, 2, 120, '', 1), N('amount', { ar: 'مقدار الحركة', en: 'Amount' }, 60, 10, 200, '%')],
+    transform: (p, info) => {
+      const inPt = info.layer.inPoint;
+      const outPt = info.layer.outPoint;
+      const f = info.frame;
+      const dur = Math.max(1, p.duration);
+      let s = 1;
+      if (f < inPt + dur) {
+        const t = (f - inPt) / dur;
+        const e = 1 - (1 - t) ** 3;
+        s = p.mode === 'in' ? 1 + (1 - e) * (p.amount / 100) : 1 - (1 - e) * (p.amount / 200);
+      } else if (f > outPt - dur) {
+        const t = (f - (outPt - dur)) / dur;
+        const e = t ** 3;
+        s = p.mode === 'in' ? 1 + e * (p.amount / 100) : 1 - e * (p.amount / 200);
+      }
+      return { sx: clamp(s, 0.05, 10), sy: clamp(s, 0.05, 10) };
+    },
+    opacityFactor: (p, info) => {
+      const inPt = info.layer.inPoint;
+      const f = info.frame;
+      const dur = Math.max(1, p.duration);
+      if (f < inPt + dur) return clamp((f - inPt) / dur, 0, 1);
+      return 1;
+    },
+  },
+  glitchTransition: {
+    id: 'glitchTransition', cat: 'transition', dom: 'both',
+    name: { ar: 'انتقال تشويش رقمي', en: 'Glitch Transition' },
+    desc: { ar: 'تشويش تقني وانشطار لوني عند الانتقال.', en: 'Cyber digital glitch transition.' },
+    params: [N('duration', { ar: 'المدة (fr)', en: 'Duration (frames)' }, 12, 2, 60, '', 1), N('intensity', { ar: 'الشدّة', en: 'Intensity' }, 80, 0, 100, '%')],
+    draw: (ctx, p, w, h, info) => {
+      const inPt = info.layer.inPoint;
+      const f = info.frame;
+      const dur = Math.max(1, p.duration);
+      if (f >= inPt && f < inPt + dur) {
+        const t = 1 - (f - inPt) / dur;
+        const power = t * (p.intensity / 100);
+        if (power > 0.05) {
+          ctx.save();
+          const slices = 6;
+          for (let s = 0; s < slices; s += 1) {
+            const sy = (s / slices) * h;
+            const sh = h / slices;
+            const shift = (Math.sin(s * 8.3 + f) * 28) * power;
+            ctx.fillStyle = s % 2 === 0 ? `rgba(0, 240, 255, ${power * 0.25})` : `rgba(255, 0, 80, ${power * 0.25})`;
+            ctx.fillRect(shift, sy, w, sh);
+          }
+          ctx.restore();
+        }
+      }
+    },
+  },
+  irisWipe: {
+    id: 'irisWipe', cat: 'transition', dom: 'both',
+    name: { ar: 'مسح القزحية (Iris)', en: 'Iris Circle Wipe' },
+    desc: { ar: 'دائرة تتسع أو تضيق للكشف عن المشهد.', en: 'Circular iris wipe transition.' },
+    params: [N('progress', { ar: 'التقدّم', en: 'Progress' }, 100, 0, 100, '%'), S('shape', { ar: 'الشكل', en: 'Shape' }, 'circle', [['circle', 'دائرة'], ['box', 'مستطيل']])],
+    clip: (p, w, h) => ({
+      path: (ctx) => {
+        const pr = p.progress / 100;
+        const cx = w / 2, cy = h / 2;
+        const maxR = Math.hypot(w, h) / 2;
+        ctx.beginPath();
+        if (p.shape === 'circle') {
+          ctx.arc(cx, cy, maxR * pr, 0, Math.PI * 2);
+        } else {
+          const bw = w * pr, bh = h * pr;
+          ctx.rect(cx - bw / 2, cy - bh / 2, bw, bh);
+        }
+        ctx.closePath();
+      },
+    }),
+  },
+  /* ------------------------------ التلوين السينمائي ------------------------------ */
+  colorGradeTealOrange: {
+    id: 'colorGradeTealOrange', cat: 'color', dom: 'both',
+    name: { ar: 'تلوين سينمائي (Teal & Orange)', en: 'Teal & Orange Grade' },
+    desc: { ar: 'نمط هوليوود البصري: ظلال زرقاء/سماوية وإضاءات برتقالية دافئة.', en: 'Hollywood blockbuster look: teal shadows and warm orange skin highlights.' },
+    params: [N('intensity', { ar: 'قوة التأثير', en: 'Intensity' }, 80, 0, 100, '%'), N('contrast', { ar: 'التباين', en: 'Contrast' }, 20, -50, 100, '%')],
+    pixel: (img, p) => {
+      const factor = p.intensity / 100;
+      const cFactor = 1 + (p.contrast / 100);
+      eachPixel(img, (d, i) => {
+        let r = d[i], g = d[i + 1], b = d[i + 2];
+        r = ((r - 128) * cFactor) + 128;
+        g = ((g - 128) * cFactor) + 128;
+        b = ((b - 128) * cFactor) + 128;
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        if (lum < 128) {
+          const shadowT = (128 - lum) / 128;
+          b += shadowT * 45 * factor;
+          g += shadowT * 18 * factor;
+          r -= shadowT * 25 * factor;
+        } else {
+          const highT = (lum - 128) / 128;
+          r += highT * 40 * factor;
+          g += highT * 15 * factor;
+          b -= highT * 35 * factor;
+        }
+        d[i] = clamp255(r);
+        d[i + 1] = clamp255(g);
+        d[i + 2] = clamp255(b);
+      });
+    },
+  },
+  colorGradeVintage: {
+    id: 'colorGradeVintage', cat: 'color', dom: 'both',
+    name: { ar: 'فيلم كلاسيكي 35 مم', en: 'Vintage 35mm Film' },
+    desc: { ar: 'ألوان دافئة مبهوتة مع تدرج درامي للأسود.', en: 'Vintage warm tones with faded blacks.' },
+    params: [N('warmth', { ar: 'الدفء', en: 'Warmth' }, 40, 0, 100, '%'), N('fade', { ar: 'بهتان الأسود', en: 'Black fade' }, 30, 0, 100, '%')],
+    pixel: (img, p) => {
+      const w = p.warmth / 100;
+      const f = p.fade / 100;
+      eachPixel(img, (d, i) => {
+        let r = d[i], g = d[i + 1], b = d[i + 2];
+        r = r + w * 28;
+        b = b - w * 22;
+        r = r * (1 - f * 0.25) + f * 35;
+        g = g * (1 - f * 0.25) + f * 30;
+        b = b * (1 - f * 0.2) + f * 40;
+        d[i] = clamp255(r);
+        d[i + 1] = clamp255(g);
+        d[i + 2] = clamp255(b);
+      });
+    },
+  },
+  colorGradeCyberpunk: {
+    id: 'colorGradeCyberpunk', cat: 'color', dom: 'both',
+    name: { ar: 'سايبربانك نيون', en: 'Cyberpunk Neon' },
+    desc: { ar: 'تدرجات بنفسجية مشعة مع أزرق كهربائي مستقبلي.', en: 'Futuristic glowing magenta and electric cyan.' },
+    params: [N('intensity', { ar: 'الشدّة', en: 'Intensity' }, 75, 0, 100, '%')],
+    pixel: (img, p) => {
+      const f = p.intensity / 100;
+      eachPixel(img, (d, i) => {
+        let r = d[i], g = d[i + 1], b = d[i + 2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        if (lum > 110) {
+          r += f * 50;
+          b += f * 55;
+          g -= f * 20;
+        } else {
+          b += f * 45;
+          g += f * 20;
+          r -= f * 30;
+        }
+        d[i] = clamp255(r);
+        d[i + 1] = clamp255(g);
+        d[i + 2] = clamp255(b);
+      });
+    },
+  },
+  colorGradeNoir: {
+    id: 'colorGradeNoir', cat: 'color', dom: 'both',
+    name: { ar: 'سينما نوار (Black & White Noir)', en: 'Cinema Noir' },
+    desc: { ar: 'أبيض وأسود درامي عالي التباين بطابع الأفلام البوليسية.', en: 'Dramatic high-contrast monochrome cinema.' },
+    params: [N('contrast', { ar: 'التباين', en: 'Contrast' }, 50, 0, 100, '%')],
+    pixel: (img, p) => {
+      const c = 1 + (p.contrast / 100);
+      eachPixel(img, (d, i) => {
+        const lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        const val = clamp255(((lum - 128) * c) + 128);
+        d[i] = val;
+        d[i + 1] = val;
+        d[i + 2] = val;
+      });
+    },
+  },
 };
 
 /* ------------------------------ مساعدات ------------------------------ */

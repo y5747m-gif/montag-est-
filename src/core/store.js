@@ -318,6 +318,33 @@ export class Store extends Emitter {
     this.emit('render');
   }
 
+  rippleDelete(ids = null) {
+    const comp = this.comp;
+    const targetIds = ids || this.selection.layerIds;
+    if (!targetIds || !targetIds.length) return;
+    const targets = comp.layers.filter((l) => targetIds.includes(l.id));
+    if (!targets.length) return;
+    const minIn = Math.min(...targets.map((l) => l.inPoint));
+    const maxOut = Math.max(...targets.map((l) => l.outPoint));
+    const gap = maxOut - minIn;
+    this.removeLayers(targetIds);
+    if (gap > 0) {
+      comp.layers.forEach((l) => {
+        if (l.inPoint >= maxOut) {
+          l.inPoint = Math.max(0, l.inPoint - gap);
+          l.outPoint = Math.max(l.inPoint + 1, l.outPoint - gap);
+          l.startTime = l.startTime - gap;
+          iterProps(l).forEach(({ prop }) => {
+            if (prop.keys?.length) offsetKeys(prop, -gap);
+          });
+        }
+      });
+      this.commit('حذف مع إزاحة (Ripple Delete)');
+      this.emit('timeline');
+      this.emit('render');
+    }
+  }
+
   duplicateLayers(ids) {
     const comp = this.comp;
     const set = new Set([].concat(ids));
