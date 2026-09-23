@@ -97,6 +97,18 @@
     <div class="menubar-spacer"></div>
     <div class="workspace-tabs" id="workspace-tabs"></div>
     <div class="menubar-actions">
+      <button class="btn showcase-badge-btn" id="btn-showcase" title="معرض التطبيق والموقع — Montage Studio Showcase"><svg><use href="#i-image"/></svg><span>المعرض والموقع</span></button>
+      <button class="tb-btn ghost" id="btn-voiceover" title="تسجيل تعليق صوتي (Voiceover)"><svg><use href="#i-mic"/></svg></button>
+      <button class="tb-btn ghost" id="btn-screenrec" title="تسجيل الشاشة والكاميرا"><svg><use href="#i-video"/></svg></button>
+      <select id="select-aspect-ratio" class="mini-select" title="مقاس الفيديو والمنصات">
+        <option value="1920x1080">16:9 يوتيوب (1080p)</option>
+        <option value="3840x2160">16:9 سينمائي 4K</option>
+        <option value="1080x1920">9:16 تيك توك / ريلز</option>
+        <option value="1080x1080">1:1 مربع إنستغرام</option>
+        <option value="1080x1350">4:5 طولي إنستغرام</option>
+        <option value="2560x1080">21:9 شاشة سينمائية</option>
+      </select>
+      <span class="sep"></span>
       <button class="tb-btn ghost" id="btn-undo" data-i18n-title="undo" title="تراجع (Ctrl+Z)"><svg><use href="#i-undo"/></svg></button>
       <button class="tb-btn ghost" id="btn-redo" data-i18n-title="redo" title="إعادة (Ctrl+Shift+Z)"><svg><use href="#i-redo"/></svg></button>
       <span class="sep"></span>
@@ -127,6 +139,8 @@
         <header class="panel-head">
           <div class="panel-tabs" data-tabs="project">
             <button class="ptab active" data-tab="assets"><svg><use href="#i-folder"/></svg><span data-i18n="assets">المشروع</span></button>
+            <button class="ptab" data-tab="transitions"><svg><use href="#i-transition"/></svg><span>الانتقالات</span></button>
+            <button class="ptab" data-tab="soundfx"><svg><use href="#i-audio"/></svg><span>مؤثرات صوت</span></button>
             <button class="ptab" data-tab="effects"><svg><use href="#i-effects"/></svg><span data-i18n="effects">التأثيرات</span></button>
             <button class="ptab" data-tab="presets"><svg><use href="#i-star2"/></svg><span data-i18n="presets">القوالب</span></button>
           </div>
@@ -142,6 +156,12 @@
               <button class="tb-btn ghost sm" id="btn-new-folder" title="مجلد جديد"><svg><use href="#i-folder"/></svg></button>
             </div>
             <div class="asset-list" id="asset-list"></div>
+          </div>
+          <div class="tab-body" data-tabbody="transitions">
+            <div class="fx-browser" id="transitions-browser"></div>
+          </div>
+          <div class="tab-body" data-tabbody="soundfx">
+            <div class="fx-browser" id="soundfx-browser"></div>
           </div>
           <div class="tab-body" data-tabbody="effects">
             <div class="panel-subhead">
@@ -192,6 +212,14 @@
             <input class="timecode-input dim" id="tc-duration" value="00:00:10:00" readonly />
           </div>
           <div class="transport-center" id="transport-buttons"></div>
+          <div class="transport-audio-meter" id="transport-audio-meter">
+            <div class="stereo-vu" title="مقياس مستوى الصوت الحي (Stereo VU Meter)">
+              <div class="vu-channel"><div class="vu-bar" id="vu-bar-l"></div></div>
+              <div class="vu-channel"><div class="vu-bar" id="vu-bar-r"></div></div>
+            </div>
+            <span class="vu-db" id="vu-db-text">-∞ dB</span>
+            <input type="range" id="master-vol-slider" min="0" max="150" value="100" class="mini-range" title="مستوى الصوت العام" />
+          </div>
           <div class="transport-right">
             <label class="mini-field" title="الإطارات في الثانية"><span data-i18n="fps">FPS</span><input id="comp-fps" type="number" min="1" max="120" step="1" value="30" /></label>
             <label class="mini-field" title="مدة منطقة العمل"><span data-i18n="workarea">منطقة العمل</span><input id="workarea-dur" value="00:00:10:00" spellcheck="false" /></label>

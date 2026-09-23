@@ -3,7 +3,7 @@
  */
 
 const TOOL_KEYS = {
-  v: 'select', h: 'hand', z: 'zoom', w: 'rotate', y: 'pan-behind',
+  v: 'select', c: 'razor', h: 'hand', z: 'zoom', w: 'rotate', y: 'pan-behind',
   q: 'rect', e: 'ellipse', r: 'pen', t: 'text', g: 'pen',
 };
 
@@ -86,7 +86,8 @@ export function installShortcuts(app) {
         return;
       case 'Delete': case 'Backspace':
         e.preventDefault();
-        if (store.selection.props.length) store.deleteAnimation(...store.selection.props[0].split('::'));
+        if (e.shiftKey && store.selection.layerIds.length) store.rippleDelete(store.selection.layerIds);
+        else if (store.selection.props.length) store.deleteAnimation(...store.selection.props[0].split('::'));
         else if (store.selection.layerIds.length) store.removeLayers(store.selection.layerIds);
         return;
       case 'Escape':

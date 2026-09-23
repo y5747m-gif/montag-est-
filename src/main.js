@@ -16,6 +16,8 @@ import { MenuBar, showContextMenu } from './ui/menu.js';
 import { installShortcuts } from './ui/shortcuts.js';
 import { shortcutsDialog, confirmDialog, promptDialog } from './ui/dialog.js';
 import { exportDialog } from './export/exporters.js';
+import { openShowcaseDialog } from './ui/showcase.js';
+import { openVoiceoverRecorder, openScreenRecorder } from './media/recorder.js';
 import { createDemoProject, registerDemoMedia } from './project/demo.js';
 import { toastOk, toastWarn, toastErr } from './ui/toast.js';
 import { applyI18n, setLang, getLang } from './core/i18n.js';
@@ -75,6 +77,7 @@ class App {
     this.viewer.layout(true);
     this.timeline.rebuild();
     this.propsPanel.render();
+    this.startVUMeterLoop();
 
     setBoot('جاهز');
     if (boot) {
@@ -178,6 +181,11 @@ class App {
     document.getElementById('btn-export')?.addEventListener('click', () => this.exportDialog());
     document.getElementById('btn-help')?.addEventListener('click', () => this.showShortcuts());
     document.getElementById('btn-lang')?.addEventListener('click', () => this.toggleLang());
+    document.getElementById('btn-showcase')?.addEventListener('click', () => this.openShowcase());
+    document.getElementById('btn-voiceover')?.addEventListener('click', () => this.openVoiceover());
+    document.getElementById('btn-screenrec')?.addEventListener('click', () => this.openScreenRecorder());
+    document.getElementById('select-aspect-ratio')?.addEventListener('change', (e) => this.setAspectRatio(e.target.value));
+    document.getElementById('master-vol-slider')?.addEventListener('input', (e) => this.audio.setMasterVolume(parseFloat(e.target.value) / 100));
     document.getElementById('btn-panel-menu')?.addEventListener('click', (e) => this.panelMenu(e));
     document.getElementById('btn-props-menu')?.addEventListener('click', (e) => this.propsMenu(e));
     document.getElementById('tl-columns-btn')?.addEventListener('click', (e) => this.panelMenu(e));
@@ -334,6 +342,7 @@ class App {
   /* ============================ الأدوات ============================ */
   setTool(tool) {
     this.tool = tool;
+    if (document.body) document.body.dataset.tool = tool;
     document.querySelectorAll('.tool-btn[data-tool]').forEach((b) => b.classList.toggle('active', b.dataset.tool === tool));
     if (this.viewer) {
       this.viewer.canvas.style.cursor = ({
@@ -546,6 +555,40 @@ class App {
   }
 
   exportDialog() { exportDialog(this); }
+  openShowcase() { openShowcaseDialog(this); }
+  openVoiceover() { openVoiceoverRecorder(this); }
+  openScreenRecorder() { openScreenRecorder(this); }
+
+  setAspectRatio(ratioStr) {
+    if (!ratioStr || !ratioStr.includes('x')) return;
+    const [w, h] = ratioStr.split('x').map(Number);
+    if (!w || !h) return;
+    this.store.updateComp({ width: w, height: h }, `تغيير المقاس إلى ${ratioStr}`);
+    this.viewer.layout();
+    this.viewer.fit();
+    toastOk(`تم ضبط أبعاد الفيديو على ${w}×${h}`);
+  }
+
+  startVUMeterLoop() {
+    const barL = document.getElementById('vu-bar-l');
+    const barR = document.getElementById('vu-bar-r');
+    const dbText = document.getElementById('vu-db-text');
+    if (!barL || !barR) return;
+    const update = () => {
+      if (this.store.playing) {
+        const levels = this.audio.getAudioLevels();
+        barL.style.height = `${Math.min(100, Math.round(levels.left * 100))}%`;
+        barR.style.height = `${Math.min(100, Math.round(levels.right * 100))}%`;
+        if (dbText) dbText.textContent = levels.db > -80 ? `${levels.db} dB` : '-∞ dB';
+      } else {
+        barL.style.height = '0%';
+        barR.style.height = '0%';
+        if (dbText) dbText.textContent = '-∞ dB';
+      }
+      requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  }
 
   /* ============================ التحرير ============================ */
   addEffectToSelection(fxId) {
