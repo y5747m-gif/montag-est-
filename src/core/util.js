@@ -106,9 +106,15 @@ export function framesToTimecode(frames, fps, { framesOnly = false } = {}) {
   if (framesOnly) return `${p(hh)}:${p(mm)}:${p(ss)}:${p(ff)}`;
   return `${p(hh)}:${p(mm)}:${p(ss)}:${p(ff)}`;
 }
-export function timecodeToFrames(tc, fps) {
+export function timecodeToFrames(tc, fps = 30) {
   if (tc == null) return 0;
   const s = String(tc).trim();
+  if (/^-?\d+(\.\d+)?\s*s$/i.test(s)) {
+    return Math.round(parseFloat(s) * fps);
+  }
+  if (/^-?\d+\s*f$/i.test(s)) {
+    return Math.round(parseFloat(s));
+  }
   if (/^-?\d+(\.\d+)?$/.test(s)) return Math.round(parseFloat(s));
   const parts = s.split(':').map((x) => parseInt(x, 10) || 0);
   while (parts.length < 4) parts.unshift(0);

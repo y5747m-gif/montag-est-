@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Montage Studio — استوديو المونتاج والموشن جرافيك</title>
+<title>Montage Studio Pro — استوديو المونتاج والموشن جرافيك الاحترافي</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles/app.css" />
 <link rel="stylesheet" href="styles/timeline.css" />
 <link rel="stylesheet" href="styles/viewer.css" />
@@ -28,7 +31,7 @@
     <symbol id="i-solid" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="currentColor" opacity=".85"/></symbol>
     <symbol id="i-adjust" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 4a8 8 0 000 16z" fill="currentColor"/></symbol>
     <symbol id="i-null" viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="8" rx="4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 2"/></symbol>
-    <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="7" width="12" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15 11l6-3v8l-6-3z" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15 11l6-3v8l-6-3z" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
     <symbol id="i-razor" viewBox="0 0 24 24"><path d="M4 4l9 9M20 4l-9 9" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="7" cy="17" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="17" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
     <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></symbol>
     <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M4 5l15 15M9.5 9.7A2.6 2.6 0 0012 14.6M6.6 7.3C4 9 2.5 12 2.5 12s3.5 5.5 9.5 5.5c1.6 0 3-.4 4.2-1M17 15.6c2.6-1.7 4.5-3.6 4.5-3.6S18 6.5 12 6.5c-.6 0-1.2.1-1.7.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
@@ -65,6 +68,7 @@
     <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 16l5-4 4 3 3-2.5 6 4.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8.5" cy="9.5" r="1.4" fill="currentColor"/></symbol>
     <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 11l5-2.5v7L16 13z" fill="currentColor"/></symbol>
     <symbol id="i-audio" viewBox="0 0 24 24"><path d="M5 14v-4M9 17V7M13 15.5v-7M17 18V6M21 14.5v-5" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-audio-mute" viewBox="0 0 24 24"><path d="M4 14v-4M8 17V7M12 15.5v-7" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round"/><path d="M16 8l6 8M22 8l-6 8" stroke="#ef4444" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
     <symbol id="i-comp" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h10M7 12.5h7" stroke="currentColor" stroke-width="1.4"/></symbol>
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 015.7 0l2.6-2.6a4 4 0 00-5.7-5.7L11 7.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M14 10a4 4 0 01-5.7 0L5.7 12.6a4 4 0 005.7 5.7l1.6-1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
@@ -91,22 +95,23 @@
     <div class="brand">
       <span class="brand-mark">M</span>
       <span class="brand-name">Montage&nbsp;Studio</span>
-      <span class="brand-ver" id="brand-version">1.0</span>
+      <span class="brand-badge">PRO</span>
     </div>
     <nav class="menu-root" id="menu-root"></nav>
     <div class="menubar-spacer"></div>
     <div class="workspace-tabs" id="workspace-tabs"></div>
     <div class="menubar-actions">
       <button class="btn showcase-badge-btn" id="btn-showcase" title="معرض التطبيق والموقع — Montage Studio Showcase"><svg><use href="#i-image"/></svg><span>المعرض والموقع</span></button>
-      <button class="tb-btn ghost" id="btn-voiceover" title="تسجيل تعليق صوتي (Voiceover)"><svg><use href="#i-mic"/></svg></button>
+      <button class="tb-btn ghost" id="btn-voiceover" title="تسجيل تعليق صوتي حي (Voiceover)"><svg><use href="#i-mic"/></svg></button>
       <button class="tb-btn ghost" id="btn-screenrec" title="تسجيل الشاشة والكاميرا"><svg><use href="#i-video"/></svg></button>
-      <select id="select-aspect-ratio" class="mini-select" title="مقاس الفيديو والمنصات">
-        <option value="1920x1080">16:9 يوتيوب (1080p)</option>
-        <option value="3840x2160">16:9 سينمائي 4K</option>
-        <option value="1080x1920">9:16 تيك توك / ريلز</option>
+      <select id="select-aspect-ratio" class="mini-select aspect-select" title="مقاس الفيديو والمنصات (Aspect Ratio)">
+        <option value="1920x1080">16:9 يوتيوب وسينما (1080p)</option>
+        <option value="3840x2160">16:9 سينمائي 4K فائقة</option>
+        <option value="1080x1920">9:16 تيك توك / ريلز / شورتس</option>
         <option value="1080x1080">1:1 مربع إنستغرام</option>
         <option value="1080x1350">4:5 طولي إنستغرام</option>
-        <option value="2560x1080">21:9 شاشة سينمائية</option>
+        <option value="2560x1080">21:9 شاشة عريضة سينمائية</option>
+        <option value="1280x720">16:9 عالي الدقة HD</option>
       </select>
       <span class="sep"></span>
       <button class="tb-btn ghost" id="btn-undo" data-i18n-title="undo" title="تراجع (Ctrl+Z)"><svg><use href="#i-undo"/></svg></button>
@@ -114,7 +119,7 @@
       <span class="sep"></span>
       <button class="tb-btn ghost" id="btn-lang" title="تغيير اللغة / Switch language"><span id="lang-label">EN</span></button>
       <button class="tb-btn ghost" id="btn-help" title="اختصارات لوحة المفاتيح"><svg><use href="#i-settings"/></svg></button>
-      <button class="btn primary" id="btn-export"><svg><use href="#i-export"/></svg><span data-i18n="render">تصدير</span></button>
+      <button class="btn primary btn-export-glow" id="btn-export"><svg><use href="#i-export"/></svg><span data-i18n="render">تصدير الفيديو</span></button>
     </div>
   </header>
 
@@ -126,7 +131,7 @@
     <div class="tool-sep"></div>
     <div class="tool-group" data-toolgroup="misc"></div>
     <div class="tool-spacer"></div>
-    <button class="tool-btn" id="btn-add-media" data-i18n-title="import" title="استيراد ملفات"><svg><use href="#i-plus"/></svg></button>
+    <button class="tool-btn add-media-btn" id="btn-add-media" data-i18n-title="import" title="استيراد ملفات وسائط إلى المشروع"><svg><use href="#i-plus"/></svg><span>استيراد</span></button>
     <input type="file" id="file-input" multiple hidden />
   </div>
 
@@ -158,9 +163,15 @@
             <div class="asset-list" id="asset-list"></div>
           </div>
           <div class="tab-body" data-tabbody="transitions">
+            <div class="panel-subhead">
+              <div class="search-box"><svg><use href="#i-search"/></svg><input id="transitions-search" placeholder="بحث في الانتقالات…" /></div>
+            </div>
             <div class="fx-browser" id="transitions-browser"></div>
           </div>
           <div class="tab-body" data-tabbody="soundfx">
+            <div class="panel-subhead">
+              <div class="search-box"><svg><use href="#i-search"/></svg><input id="soundfx-search" placeholder="بحث في المؤثرات الصوتية…" /></div>
+            </div>
             <div class="fx-browser" id="soundfx-browser"></div>
           </div>
           <div class="tab-body" data-tabbody="effects">
@@ -170,6 +181,9 @@
             <div class="fx-browser" id="effects-browser"></div>
           </div>
           <div class="tab-body" data-tabbody="presets">
+            <div class="panel-subhead">
+              <div class="search-box"><svg><use href="#i-search"/></svg><input id="presets-search" placeholder="بحث في القوالب…" /></div>
+            </div>
             <div class="fx-browser" id="presets-browser"></div>
           </div>
         </div>
@@ -207,12 +221,13 @@
         </div>
         <footer class="transport" id="transport">
           <div class="transport-left">
-            <input class="timecode-input" id="tc-current" value="00:00:00:00" spellcheck="false" />
+            <input class="timecode-input" id="tc-current" value="00:00:00:00" spellcheck="false" title="الموضع الحالي (اضغط Enter للتأكيد)" />
             <span class="tc-sep">/</span>
-            <input class="timecode-input dim" id="tc-duration" value="00:00:10:00" readonly />
+            <input class="timecode-input dim" id="tc-duration" value="00:00:10:00" readonly title="مدة التركيب" />
           </div>
           <div class="transport-center" id="transport-buttons"></div>
           <div class="transport-audio-meter" id="transport-audio-meter">
+            <button class="tb-btn ghost sm mute-btn" id="btn-audio-mute" title="كتم / تشغيل الصوت"><svg><use href="#i-audio"/></svg></button>
             <div class="stereo-vu" title="مقياس مستوى الصوت الحي (Stereo VU Meter)">
               <div class="vu-channel"><div class="vu-bar" id="vu-bar-l"></div></div>
               <div class="vu-channel"><div class="vu-bar" id="vu-bar-r"></div></div>
@@ -238,7 +253,7 @@
           <div class="panel-head-actions">
             <button class="tb-btn ghost sm" data-tl-action="snap" title="التصاق (Snap)"><svg><use href="#i-snap"/></svg></button>
             <button class="tb-btn ghost sm" data-tl-action="zoom-out" title="تصغير الخط الزمني">−</button>
-            <input id="tl-zoom" type="range" min="1" max="60" step="0.5" value="14" class="mini-range" title="تكبير الخط الزمني" />
+            <input id="tl-zoom" type="range" min="1" max="100" step="0.5" value="14" class="mini-range" title="تكبير الخط الزمني" />
             <button class="tb-btn ghost sm" data-tl-action="zoom-in" title="تكبير الخط الزمني">+</button>
             <button class="tb-btn ghost sm" data-tl-action="fit" title="ملء العرض">↔</button>
             <button class="tb-btn ghost sm" data-tl-action="add-keyframe" title="إضافة مفتاح في الموضع الحالي"><svg><use href="#i-diamond"/></svg></button>

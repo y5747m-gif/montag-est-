@@ -1,177 +1,653 @@
-/* ============================ الخط الزمني ============================ */
+/* ==========================================================================
+   Montage Studio Pro — تصميم الخط الزمني الاحترافي (Professional Timeline)
+   نظام تحريك متقدم ومونتاج متعدد المسارات بنظام زمني فائق الدقة
+   ========================================================================== */
+
 :root {
-  --tl-head-w: 260px;
-  --tl-row-h: 30px;
-  --tl-ruler-h: 28px;
-  --tl-zoom: 14; /* بكسل لكل إطار */
+  --tl-head-w: 280px;
+  --tl-row-h: 32px;
+  --tl-ruler-h: 30px;
+  --tl-zoom: 14;
 }
 
-.timeline-panel { flex: 1 1 0; min-height: 150px; }
-.timeline-body { display: flex; flex-direction: column; overflow: hidden; }
+.timeline-panel {
+  flex: 1 1 0;
+  min-height: 160px;
+}
+
+.timeline-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-1);
+}
+
+/* الرأس: زاوية الطبقات ومسطرة الزمن */
 .timeline-head {
-  display: grid; grid-template-columns: var(--tl-head-w) 1fr; height: var(--tl-ruler-h);
-  background: var(--bg-2); border-bottom: 1px solid var(--line); flex: 0 0 auto; position: relative;
+  display: grid;
+  grid-template-columns: var(--tl-head-w) 1fr;
+  height: var(--tl-ruler-h);
+  background: #14171f;
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+  position: relative;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
+
 .tl-corner {
-  display: flex; align-items: center; gap: 6px; padding: 0 8px; border-inline-end: 1px solid var(--line);
-  font-size: 11px; color: var(--txt-2); background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  border-inline-end: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--txt-2);
+  background: #14171f;
 }
-.tl-ruler-wrap { position: relative; overflow: hidden; }
-#tl-ruler { display: block; height: var(--tl-ruler-h); cursor: pointer; }
-.timeline-main { display: grid; grid-template-columns: var(--tl-head-w) 1fr; flex: 1; min-height: 0; }
-.tl-layers { overflow: hidden auto; background: var(--bg-1); border-inline-end: 1px solid var(--line); }
-.tl-tracks-wrap { overflow: auto; position: relative; background: var(--bg-0); }
-.tl-tracks { position: relative; min-height: 100%; }
-.tl-row { position: relative; }
-.tl-row.layer-row { height: var(--tl-row-h); border-bottom: 1px solid rgba(255,255,255,.04); }
-.tl-row.prop-row-tl { height: 22px; background: var(--bg-1); border-bottom: 1px solid rgba(255,255,255,.03); }
-.tl-tracks .tl-row.layer-row { background: linear-gradient(90deg, rgba(255,255,255,.02), transparent 40%); }
-.tl-tracks .tl-row:nth-child(even).layer-row { background: rgba(255,255,255,.012); }
 
-/* رأس الطبقة */
+.tl-ruler-wrap {
+  position: relative;
+  overflow: hidden;
+  direction: ltr;
+  background: #0f1117;
+}
+
+#tl-ruler {
+  display: block;
+  height: var(--tl-ruler-h);
+  cursor: pointer;
+}
+
+/* الجسم الرئيسي للخط الزمني */
+.timeline-main {
+  display: grid;
+  grid-template-columns: var(--tl-head-w) 1fr;
+  flex: 1;
+  min-height: 0;
+}
+
+/* عمود رؤوس الطبقات */
+.tl-layers {
+  overflow: hidden auto;
+  background: #111319;
+  border-inline-end: 1px solid var(--line);
+}
+
+/* مسارات الخط الزمني — دائماً من اليسار لليمين LTR لتدفق الزمن العالمي */
+.tl-tracks-wrap {
+  overflow: auto;
+  position: relative;
+  background: #090a0e;
+  direction: ltr;
+}
+
+.tl-tracks {
+  position: relative;
+  min-height: 100%;
+  direction: ltr;
+}
+
+.tl-row {
+  position: relative;
+}
+
+.tl-row.layer-row {
+  height: var(--tl-row-h);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+}
+
+.tl-row.prop-row-tl {
+  height: 24px;
+  background: #0f1117;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+}
+
+.tl-tracks .tl-row.layer-row {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.015), transparent 40%);
+}
+
+.tl-tracks .tl-row:nth-child(even).layer-row {
+  background: rgba(255, 255, 255, 0.012);
+}
+
+/* ============================ رأس الطبقة (Layer Header) ============================ */
 .layer-head {
-  display: flex; align-items: center; gap: 4px; height: var(--tl-row-h); padding: 0 6px;
-  border-bottom: 1px solid rgba(255,255,255,.04); font-size: 11.5px; position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--tl-row-h);
+  padding: 0 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+  font-size: 12px;
+  position: relative;
+  transition: background 0.1s ease;
 }
-.layer-head.selected { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
-.layer-head:hover { background: var(--bg-2); }
-.layer-head.selected:hover { background: var(--accent-soft); }
-.layer-head .color-chip { width: 6px; height: 20px; border-radius: 2px; flex: 0 0 auto; }
-.layer-head .num { font-family: var(--font-num); color: var(--txt-dim); font-size: 10px; width: 14px; text-align: center; }
-.layer-head .lyr-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.layer-head:hover {
+  background: #191c26;
+}
+
+.layer-head.selected {
+  background: rgba(59, 130, 246, 0.16);
+  border-inline-start: 3px solid var(--accent);
+}
+
+.layer-head.selected:hover {
+  background: rgba(59, 130, 246, 0.22);
+}
+
+.layer-head .color-chip {
+  width: 5px;
+  height: 22px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+.layer-head .num {
+  font-family: var(--font-num);
+  color: var(--txt-dim);
+  font-size: 10.5px;
+  font-weight: 600;
+  width: 16px;
+  text-align: center;
+}
+
+.layer-head .lyr-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--txt-0);
+}
+
 .layer-head .lyr-name input {
-  width: 100%; background: var(--bg-0); border: 1px solid var(--accent); border-radius: 3px; padding: 1px 3px;
-  font-size: 11.5px; outline: none;
+  width: 100%;
+  background: var(--bg-0);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 2px 5px;
+  font-size: 11.5px;
+  outline: none;
+  color: #fff;
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
+
+/* أزرار التبديل بالطبقة */
 .layer-head .toggle {
-  width: 15px; height: 15px; display: grid; place-items: center; background: transparent; border: 0;
-  color: var(--txt-dim); border-radius: 3px; flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--txt-dim);
+  border-radius: 3px;
+  flex: 0 0 auto;
+  transition: all 0.12s ease;
 }
-.layer-head .toggle svg { width: 12px; height: 12px; }
-.layer-head .toggle:hover { background: var(--bg-3); color: var(--txt-0); }
-.layer-head .toggle.on { color: var(--txt-0); }
-.layer-head .toggle.solo.on { color: var(--amber); }
-.layer-head .toggle.shy.on { color: var(--violet); }
-.layer-head .parent-whip { width: 12px; height: 12px; border-radius: 3px; background: var(--bg-3); border: 1px solid var(--line); }
-.layer-head .parent-whip.set { background: var(--accent); border-color: var(--accent-2); }
-.layer-head .matte-select { width: 30px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 3px; font-size: 9.5px; padding: 0; }
 
-/* صفوف الخصائص داخل الخط الزمني */
+.layer-head .toggle svg {
+  width: 13px;
+  height: 13px;
+}
+
+.layer-head .toggle:hover {
+  background: var(--bg-3);
+  color: var(--txt-0);
+}
+
+.layer-head .toggle.on {
+  color: var(--txt-0);
+}
+
+.layer-head .toggle.solo.on {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+}
+
+.layer-head .toggle.shy.on {
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.15);
+}
+
+.layer-head .parent-whip {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+}
+
+.layer-head .parent-whip.set {
+  background: var(--accent);
+  border-color: var(--accent-2);
+}
+
+.layer-head .twirl-btn svg {
+  transition: transform 0.15s ease;
+}
+
+.layer-head .twirl-btn.on svg,
+[dir=rtl] .layer-head .twirl-btn svg {
+  transform: rotate(90deg);
+}
+
+[dir=rtl] .layer-head .twirl-btn.on svg {
+  transform: rotate(0deg);
+}
+
+/* ============================ صفوف الخصائص بالخط الزمني ============================ */
 .tl-prop {
-  display: flex; align-items: center; gap: 4px; height: 22px; padding-inline-start: 22px; padding-inline-end: 6px;
-  font-size: 11px; color: var(--txt-2); border-bottom: 1px solid rgba(255,255,255,.03);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding-inline-start: 24px;
+  padding-inline-end: 8px;
+  font-size: 11px;
+  color: var(--txt-2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
 }
-.tl-prop:hover { background: var(--bg-2); }
-.tl-prop .tl-prop-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tl-prop .mini-value { font-family: var(--font-num); font-size: 10px; color: var(--txt-dim); }
 
-/* القصاصات (Clips) */
+.tl-prop:hover {
+  background: #141720;
+}
+
+.tl-prop .tl-prop-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-prop .mini-value {
+  font-family: var(--font-num);
+  font-size: 10px;
+  color: var(--txt-dim);
+}
+
+/* ============================ القصاصات (Timeline Clips) ============================ */
 .clip {
-  position: absolute; top: 6px; height: calc(var(--tl-row-h) - 12px); border-radius: 3px;
-  background: linear-gradient(180deg, #3d5a80, #2f4666); border: 1px solid rgba(255,255,255,.18);
-  box-shadow: 0 1px 3px rgba(0,0,0,.4); overflow: hidden; cursor: default; min-width: 4px;
+  position: absolute;
+  top: 5px;
+  height: calc(var(--tl-row-h) - 10px);
+  border-radius: 5px;
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 6px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  cursor: default;
+  min-width: 6px;
+  transition: box-shadow 0.12s;
 }
-.clip.selected { border-color: #fff; box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(0,0,0,.5); }
+
+.clip.selected {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 1.5px var(--accent), 0 4px 16px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
 .clip .clip-label {
-  position: absolute; inset-inline-start: 4px; top: 1px; font-size: 10px; color: rgba(255,255,255,.92);
-  text-shadow: 0 1px 2px rgba(0,0,0,.8); pointer-events: none; white-space: nowrap; overflow: hidden;
-  max-width: calc(100% - 10px);
+  position: absolute;
+  inset-inline-start: 6px;
+  top: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: calc(100% - 14px);
+  z-index: 3;
 }
-.clip video, .clip img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5; }
-.clip canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .75; }
-.clip .clip-edge { position: absolute; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
-.clip .clip-edge.start { inset-inline-start: 0; }
-.clip .clip-edge.end { inset-inline-end: 0; }
-.clip .clip-edge:hover { background: rgba(255,255,255,.35); }
-.clip .fade-handle { position: absolute; top: 0; width: 10px; height: 10px; background: rgba(255,255,255,.7); border-radius: 0 0 4px 4px; cursor: ew-resize; }
-.clip .fade-handle.in { inset-inline-start: 0; }
-.clip .fade-handle.out { inset-inline-end: 0; }
+
+.clip video,
+.clip img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+}
+
+.clip canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+  z-index: 2;
+}
+
+/* مقابض القص للقصاصات */
+.clip .clip-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 4;
+}
+
+.clip .clip-edge.start {
+  inset-inline-start: 0;
+}
+
+.clip .clip-edge.end {
+  inset-inline-end: 0;
+}
+
+.clip .clip-edge:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.clip .fade-handle {
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 0 0 4px 4px;
+  cursor: ew-resize;
+  z-index: 5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.clip .fade-handle.in {
+  inset-inline-start: 2px;
+}
+
+.clip .fade-handle.out {
+  inset-inline-end: 2px;
+}
+
 .clip .clip-badge {
-  position: absolute; inset-inline-end: 3px; top: 1px; font-size: 9px; color: rgba(255,255,255,.75);
-  background: rgba(0,0,0,.35); border-radius: 3px; padding: 0 3px; pointer-events: none;
+  position: absolute;
+  inset-inline-end: 4px;
+  top: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+  padding: 1px 4px;
+  pointer-events: none;
+  z-index: 3;
 }
-.clip.dragging { opacity: .85; }
-.clip.type-text { background: linear-gradient(180deg, #6b5a92, #4b3f68); }
-.clip.type-shape { background: linear-gradient(180deg, #8a6a3a, #634c28); }
-.clip.type-solid { background: linear-gradient(180deg, #4f6b52, #374c39); }
-.clip.type-adjustment { background: linear-gradient(180deg, #7a4a52, #57333a); }
-.clip.type-null { background: linear-gradient(180deg, #4a4f58, #34383f); }
-.clip.type-precomp { background: linear-gradient(180deg, #3d6b6b, #2a4c4c); }
-.clip.type-image { background: linear-gradient(180deg, #3f6480, #2b4659); }
-.clip.type-video, .clip.type-media { background: linear-gradient(180deg, #2f5a78, #1f3f56); }
-.clip.type-audio { background: linear-gradient(180deg, #2f6b58, #204a3d); }
-.clip.type-light { background: linear-gradient(180deg, #8a8034, #5f5822); }
-.clip.type-camera { background: linear-gradient(180deg, #5a5a6e, #3d3d4d); }
-.clip.type-particles { background: linear-gradient(180deg, #7a5a8a, #533d5f); }
-.clip.type-visualizer { background: linear-gradient(180deg, #2f7180, #1f4f5a); }
-.clip.hidden-layer { opacity: .35; }
-.layer-head .twirl-btn svg { transition: transform .15s; }
-.layer-head .twirl-btn.on svg, [dir=rtl] .layer-head .twirl-btn svg { transform: rotate(90deg); }
-[dir=rtl] .layer-head .twirl-btn.on svg { transform: rotate(0deg); }
 
-/* خط الزمن / المؤشر */
+.clip.dragging {
+  opacity: 0.85;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* ألوان القصاصات حسب نوع الطبقة */
+.clip.type-text {
+  background: linear-gradient(180deg, #7c3aed, #5b21b6);
+}
+
+.clip.type-shape {
+  background: linear-gradient(180deg, #d97706, #92400e);
+}
+
+.clip.type-solid {
+  background: linear-gradient(180deg, #059669, #065f46);
+}
+
+.clip.type-adjustment {
+  background: linear-gradient(180deg, #db2777, #9d174d);
+}
+
+.clip.type-null {
+  background: linear-gradient(180deg, #475569, #334155);
+}
+
+.clip.type-precomp {
+  background: linear-gradient(180deg, #0891b2, #155e75);
+}
+
+.clip.type-image {
+  background: linear-gradient(180deg, #2563eb, #1e40af);
+}
+
+.clip.type-video,
+.clip.type-media {
+  background: linear-gradient(180deg, #1d4ed8, #1e3a8a);
+}
+
+.clip.type-audio {
+  background: linear-gradient(180deg, #0d9488, #115e59);
+}
+
+.clip.type-light {
+  background: linear-gradient(180deg, #ca8a04, #854d0e);
+}
+
+.clip.type-camera {
+  background: linear-gradient(180deg, #4f46e5, #3730a3);
+}
+
+.clip.type-particles {
+  background: linear-gradient(180deg, #9333ea, #6b21a8);
+}
+
+.clip.type-visualizer {
+  background: linear-gradient(180deg, #0284c7, #075985);
+}
+
+.clip.hidden-layer {
+  opacity: 0.35;
+}
+
+/* ============================ مؤشر الزمن ورأس القراءة (Playhead) ============================ */
 .tl-playhead {
-  position: absolute; top: 0; bottom: 0; width: 1px; background: var(--amber); pointer-events: none; z-index: 12;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
+  pointer-events: none;
+  z-index: 12;
 }
-#tl-ruler-wrap .tl-playhead { z-index: 13; }
+
+#tl-ruler-wrap .tl-playhead {
+  z-index: 14;
+}
+
 .tl-playhead::before {
-  content: ''; position: absolute; top: 0; inset-inline-start: -6px; width: 13px; height: 11px;
-  background: var(--amber); clip-path: polygon(0 0, 100% 0, 50% 100%);
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -6px;
+  width: 13px;
+  height: 12px;
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
-.tl-grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.06); pointer-events: none; }
+
+.tl-grid-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
 .tl-workarea {
-  position: absolute; top: 0; height: var(--tl-ruler-h); background: rgba(74,157,255,.22);
-  border-inline: 1px solid var(--accent); pointer-events: none;
+  position: absolute;
+  top: 0;
+  height: var(--tl-ruler-h);
+  background: rgba(59, 130, 246, 0.22);
+  border-inline: 2px solid var(--accent);
+  pointer-events: none;
+  box-shadow: inset 0 2px 0 rgba(59, 130, 246, 0.6);
 }
-.tl-row .tl-workarea-tint { position: absolute; inset: 0 auto 0 0; background: rgba(0,0,0,.25); pointer-events: none; }
-.tl-marker { position: absolute; top: 0; width: 8px; height: 8px; margin-inline-start: -4px; background: var(--green); clip-path: polygon(50% 100%, 0 0, 100% 0); }
-.tl-selection-box { position: absolute; border: 1px solid var(--accent); background: rgba(74,157,255,.15); pointer-events: none; z-index: 11; }
-.tl-snap-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #fff; opacity: .8; pointer-events: none; z-index: 11; }
 
-/* المفاتيح */
+.tl-marker {
+  position: absolute;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  background: #10b981;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.tl-selection-box {
+  position: absolute;
+  border: 1px solid var(--accent);
+  background: rgba(59, 130, 246, 0.15);
+  pointer-events: none;
+  z-index: 11;
+}
+
+.tl-snap-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #ffffff;
+  box-shadow: 0 0 8px #ffffff;
+  pointer-events: none;
+  z-index: 11;
+}
+
+/* ============================ المفاتيح الحركية (Keyframes) ============================ */
 .kf {
-  position: absolute; width: 9px; height: 9px; margin-top: -4.5px; margin-inline-start: -4.5px;
-  background: var(--amber); transform: rotate(45deg); border: 1px solid #6d4a00; cursor: pointer; z-index: 6;
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  margin-left: -5px;
+  background: #f59e0b;
+  transform: rotate(45deg);
+  border: 1px solid #78350f;
+  cursor: pointer;
+  z-index: 6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease;
 }
-.kf.selected { background: #fff; border-color: var(--accent); }
-.kf.hold { border-radius: 1px; background: #ffd479; }
-.kf.ease { background: var(--cyan); border-color: #0b5c5c; }
-.kf.nav { position: static; margin: 0; }
+
+.kf:hover {
+  transform: rotate(45deg) scale(1.3);
+}
+
+.kf.selected {
+  background: #ffffff;
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.kf.hold {
+  border-radius: 2px;
+  background: #fde047;
+}
+
+.kf.ease {
+  background: #06b6d4;
+  border-color: #164e63;
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.5);
+}
+
+.kf.nav {
+  position: static;
+  margin: 0;
+}
+
 .kf-summary {
-  position: absolute; width: 7px; height: 7px; margin-top: -3.5px; margin-inline-start: -3.5px;
-  background: var(--txt-2); transform: rotate(45deg); opacity: .8; z-index: 5;
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  margin-left: -4px;
+  background: var(--txt-2);
+  transform: rotate(45deg);
+  opacity: 0.8;
+  z-index: 5;
 }
 
-/* شريط التمرير السفلي */
+/* ============================ شريط التمرير السفلي للخط الزمني ============================ */
 .tl-footer {
-  display: flex; align-items: center; gap: 8px; padding: 3px 8px; background: var(--bg-2);
-  border-top: 1px solid var(--line-soft); font-size: 11px; color: var(--txt-2); flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 12px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--txt-2);
+  flex: 0 0 auto;
 }
-.tl-footer-left, .tl-footer-right { display: flex; align-items: center; gap: 6px; }
-.tl-info { font-family: var(--font-num); font-size: 10.5px; color: var(--txt-dim); }
 
-/* محرر المنحنيات */
-.graph-editor { position: absolute; inset: 0; background: var(--bg-0); display: flex; flex-direction: column; }
-.graph-editor[hidden] { display: none; }
-#graph-canvas { flex: 1; display: block; width: 100%; }
-.graph-toolbar {
-  display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: var(--bg-2);
-  border-top: 1px solid var(--line-soft); font-size: 11px; color: var(--txt-2);
+.tl-footer-left,
+.tl-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.tl-info {
+  font-family: var(--font-num);
+  font-size: 11px;
+  color: var(--txt-dim);
+}
+
+/* ============================ محرر المنحنيات (Graph Editor) ============================ */
+.graph-editor {
+  position: absolute;
+  inset: 0;
+  background: #090a0e;
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-editor[hidden] {
+  display: none;
+}
+
+#graph-canvas {
+  flex: 1;
+  display: block;
+  width: 100%;
+}
+
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--txt-2);
+}
+
 .graph-toolbar .prop-chip {
-  background: var(--bg-3); border: 1px solid var(--line); border-radius: 10px; padding: 1px 8px; font-size: 10.5px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--txt-1);
 }
 
-/* شريط معلومات الطبقة في الرأس */
-.tl-drop-line { position: absolute; height: 2px; background: var(--accent); z-index: 20; pointer-events: none; }
-.tl-row-drop-hint { box-shadow: inset 0 2px 0 var(--accent); }
-
-/* أداة المشرط والقص */
+/* ============================ أداة المشرط والقص ============================ */
 body[data-tool="razor"] .tl-tracks,
 body[data-tool="razor"] .clip {
   cursor: crosshair !important;
 }
+
 body[data-tool="razor"] .clip:hover {
-  outline: 1.5px dashed #ff4d6d;
+  outline: 2px dashed #f43f5e;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
 }

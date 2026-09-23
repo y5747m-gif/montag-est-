@@ -78,11 +78,17 @@ export class Viewer {
     const dispH = Math.max(16, Math.round(comp.height * this.zoom));
     // دقة الرسم حسب الوضع
     let res = 1;
-    const mode = document.getElementById('viewer-res')?.value || 'auto';
-    if (mode === 'full') res = 1;
-    else if (mode === 'half') res = 0.5;
-    else if (mode === 'quarter') res = 0.25;
-    else res = this.playing ? (dispW > 1400 ? 0.5 : 0.75) : (dispW > 1600 ? 0.75 : 1);
+    const mode = document.getElementById('viewer-res')?.value || '0.5';
+    if (mode === 'auto') {
+      res = this.playing ? (dispW > 1400 ? 0.5 : 0.75) : (dispW > 1600 ? 0.75 : 1);
+    } else {
+      const parsed = parseFloat(mode);
+      if (!isNaN(parsed) && parsed > 0) res = clamp(parsed, 0.1, 1);
+      else if (mode === 'full') res = 1;
+      else if (mode === 'half') res = 0.5;
+      else if (mode === 'quarter') res = 0.25;
+      else res = 0.5;
+    }
     if (this.quality === 'draft') res = Math.min(res, 0.5);
     this.resolution = res;
 
@@ -671,18 +677,41 @@ export class Viewer {
     this.renderGizmos();
   }
 
+  syncZoomSelect() {
+    const sel = document.getElementById('viewer-zoom');
+    if (!sel) return;
+    if (this.fitMode) {
+      sel.value = 'fit';
+      return;
+    }
+    const valStr = String(Math.round(this.zoom * 100) / 100);
+    const hasOpt = [...sel.options].some((o) => o.value === valStr);
+    if (hasOpt) {
+      sel.value = valStr;
+    } else {
+      let customOpt = sel.querySelector('option[data-custom="true"]');
+      if (!customOpt) {
+        customOpt = document.createElement('option');
+        customOpt.dataset.custom = 'true';
+        sel.appendChild(customOpt);
+      }
+      const pct = Math.round(this.zoom * 100);
+      customOpt.value = valStr;
+      customOpt.textContent = `${pct}%`;
+      sel.value = valStr;
+    }
+  }
+
   setZoom(z) {
     this.fitMode = false;
     this.zoom = clamp(z, 0.02, 8);
-    const sel = document.getElementById('viewer-zoom');
-    if (sel) sel.value = [...sel.options].some((o) => o.value === String(this.zoom)) ? String(this.zoom) : 'fit';
+    this.syncZoomSelect();
     this.layout();
   }
 
   fit() {
     this.fitMode = true;
-    const sel = document.getElementById('viewer-zoom');
-    if (sel) sel.value = 'fit';
+    this.syncZoomSelect();
     this.layout();
   }
 

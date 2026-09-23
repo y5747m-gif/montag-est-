@@ -12,6 +12,8 @@ export class AudioEngine {
     this.master = null;
     this.sources = [];
     this.playing = false;
+    this.volume = 1.0;
+    this.muted = false;
   }
 
   ensure() {
@@ -20,7 +22,7 @@ export class AudioEngine {
       if (!Ctx) return null;
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
-      this.master.gain.value = 1;
+      this.master.gain.value = this.muted ? 0 : this.volume;
       try {
         this.analyser = this.ctx.createAnalyser();
         this.analyser.fftSize = 64;
@@ -35,8 +37,22 @@ export class AudioEngine {
   }
 
   setMasterVolume(val) {
-    const v = clamp(val, 0, 2);
-    if (this.master) this.master.gain.value = v;
+    this.volume = clamp(val, 0, 2);
+    if (this.master) {
+      this.master.gain.value = this.muted ? 0 : this.volume;
+    }
+  }
+
+  setMuted(muted) {
+    this.muted = !!muted;
+    if (this.master) {
+      this.master.gain.value = this.muted ? 0 : this.volume;
+    }
+  }
+
+  toggleMute() {
+    this.setMuted(!this.muted);
+    return this.muted;
   }
 
   getAudioLevels() {

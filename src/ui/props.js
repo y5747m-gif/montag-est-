@@ -360,6 +360,9 @@ export class PropsPanel {
       this.store.setProp(layer.id, path, v, { coalesce: coalesce ? `${path}-${layer.id}` : undefined, label: `تعديل ${label}` });
     };
     if (type === 'vec2' || prop.type === PropType.VEC2) {
+      const isScale = path === 'transform.scale';
+      if (isScale && layer._scaleLinked == null) layer._scaleLinked = true;
+      let xInput, yInput;
       const makeInput = (axis) => {
         const input = el('input', {
           class: `prop-num scrub ${animated ? 'animated' : ''}`,
@@ -367,22 +370,57 @@ export class PropsPanel {
           value: fmtNum(value?.[axis] ?? 0, 1),
           title: `${label} ${axis.toUpperCase()}`,
         });
-        input.addEventListener('change', () => {
-          const v = parseFloat(input.value) || 0;
-          setValue({ ...(propValueAt(prop, frame, ctxInfo) || { x: 0, y: 0 }), [axis]: v });
-        });
-        this.makeScrubbable(input, {
-          onDelta: (d) => {
-            const cur = propValueAt(prop, frame, ctxInfo) || { x: 0, y: 0 };
+        const applyDelta = (d) => {
+          const cur = propValueAt(prop, frame, ctxInfo) || { x: 0, y: 0 };
+          if (isScale && layer._scaleLinked) {
+            const nextX = round((cur.x ?? 0) + d, 1);
+            const ratio = (cur.x !== 0 && cur.y !== 0) ? cur.y / cur.x : 1;
+            const nextY = axis === 'x' ? round(nextX * ratio, 1) : round((cur.y ?? 0) + d, 1);
+            const finalX = axis === 'x' ? nextX : round(nextY / (ratio || 1), 1);
+            if (xInput) xInput.value = fmtNum(finalX, 1);
+            if (yInput) yInput.value = fmtNum(nextY, 1);
+            setValue({ x: finalX, y: nextY });
+          } else {
             const next = { ...cur, [axis]: round((cur[axis] ?? 0) + d, 1) };
             input.value = fmtNum(next[axis], 1);
             setValue(next);
-          },
-        });
+          }
+        };
+        const applyDirect = (val) => {
+          const cur = propValueAt(prop, frame, ctxInfo) || { x: 0, y: 0 };
+          if (isScale && layer._scaleLinked) {
+            const ratio = (cur.x !== 0 && cur.y !== 0) ? cur.y / cur.x : 1;
+            const finalX = axis === 'x' ? round(val, 1) : round(val / (ratio || 1), 1);
+            const finalY = axis === 'x' ? round(val * ratio, 1) : round(val, 1);
+            if (xInput) xInput.value = fmtNum(finalX, 1);
+            if (yInput) yInput.value = fmtNum(finalY, 1);
+            setValue({ x: finalX, y: finalY });
+          } else {
+            const next = { ...cur, [axis]: round(val, 1) };
+            input.value = fmtNum(next[axis], 1);
+            setValue(next);
+          }
+        };
+        input.addEventListener('change', () => applyDirect(parseFloat(input.value) || 0));
+        this.makeScrubbable(input, { onDelta: (d) => applyDelta(d) });
         return input;
       };
-      const x = makeInput('x'), y = makeInput('y');
-      cell.append(x, y);
+      xInput = makeInput('x');
+      yInput = makeInput('y');
+      cell.append(xInput);
+      if (isScale) {
+        const linkBtn = el('button', {
+          class: `tb-btn ghost sm link-btn ${layer._scaleLinked ? 'active on' : ''}`,
+          title: layer._scaleLinked ? 'فك ربط الطول والعرض' : 'ربط تناسب الطول والعرض',
+          onclick: () => {
+            layer._scaleLinked = !layer._scaleLinked;
+            linkBtn.classList.toggle('active', layer._scaleLinked);
+            linkBtn.classList.toggle('on', layer._scaleLinked);
+          },
+        }, [icon('i-link', 11)]);
+        cell.append(linkBtn);
+      }
+      cell.append(yInput);
       cell.appendChild(el('button', { class: 'tb-btn ghost sm', title: 'إعادة ضبط', onclick: () => this.store.resetProp(layer.id, path) }, [icon('i-undo', 11)]));
     } else if (type === 'number' || prop.type === PropType.NUMBER) {
       const min = opts.min ?? prop.min;

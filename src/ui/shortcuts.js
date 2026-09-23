@@ -56,7 +56,7 @@ export function installShortcuts(app) {
         case '9': e.preventDefault(); app.viewer.setZoom(1); return;
         default: break;
       }
-      if (e.shiftKey && lower === 'd') { e.preventDefault(); store.splitLayersAt(store.playhead); return; }
+      if (e.shiftKey && lower === 'd') { e.preventDefault(); store.splitLayersAt(store.playhead, store.selection.layerIds.length ? store.selection.layerIds : null); return; }
       if (e.shiftKey && lower === 'e') { e.preventDefault(); app.exportDialog(); return; }
       if (e.shiftKey && lower === 'k') { e.preventDefault(); app.createLayerOfType('solid'); return; }
       if (e.shiftKey && e.altKey && lower === 't') { e.preventDefault(); app.createLayerOfType('text'); return; }

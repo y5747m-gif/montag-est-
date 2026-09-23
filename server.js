@@ -53,9 +53,7 @@ const server = http.createServer((req, res) => {
         'Content-Type': MIME[ext] || 'application/octet-stream',
         'Content-Length': stat.size,
         'Cache-Control': 'no-cache',
-        // تمكين الـ SharedArrayBuffer إن احتجنا لمحرّكات وسائط مستقبلية
-        'Cross-Origin-Opener-Policy': 'same-origin',
-        'Cross-Origin-Embedder-Policy': 'credentialless',
+        'Access-Control-Allow-Origin': '*',
       });
       fs.createReadStream(filePath).pipe(res);
     });
