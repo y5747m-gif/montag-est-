@@ -167,6 +167,8 @@ async function unitTests() {
   eq(util.lerp(0, 10, 0.5), 5, 'lerp');
   eq(util.framesToTimecode(95, 30), '00:00:03:05', 'إطارات ← Timecode');
   eq(util.timecodeToFrames('00:00:03:05', 30), 95, 'Timecode ← إطارات');
+  eq(util.timecodeToFrames('5s', 30), 150, 'ثوانٍ s ← إطارات');
+  eq(util.timecodeToFrames('120f', 30), 120, 'إطارات f ← إطارات');
   eq(util.hexToRgb('#ff0000').r, 255, 'hexToRgb');
   eq(util.mixColor('#000000', '#ffffff', 0.5), '#808080', 'mixColor');
   ok(util.uid('x').startsWith('x'), 'توليد معرّفات uid');

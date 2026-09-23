@@ -58,6 +58,15 @@ export class ProjectPanel {
     document.getElementById('effects-search')?.addEventListener('input', (e) => {
       this.renderEffects(e.target.value.trim().toLowerCase());
     });
+    document.getElementById('transitions-search')?.addEventListener('input', (e) => {
+      this.renderTransitions(e.target.value.trim().toLowerCase());
+    });
+    document.getElementById('soundfx-search')?.addEventListener('input', (e) => {
+      this.renderSoundFX(e.target.value.trim().toLowerCase());
+    });
+    document.getElementById('presets-search')?.addEventListener('input', (e) => {
+      this.renderPresets(e.target.value.trim().toLowerCase());
+    });
   }
 
   bindButtons() {
@@ -234,12 +243,13 @@ export class ProjectPanel {
   }
 
   /* --------------------------- القوالب --------------------------- */
-  renderPresets() {
+  renderPresets(filter = '') {
     const host = this.presetsEl;
     if (!host) return;
     clear(host);
     host.appendChild(el('div', { class: 'form-hint', style: { padding: '6px 8px' }, text: 'قوالب جاهزة تُضاف بضغطة — بعضها يحتاج تحديد طبقة أولًا.' }));
-    const grid = el('div', { class: 'preset-grid', style: { padding: '4px 8px' } }, PRESETS.map((preset) => el('div', {
+    const filtered = PRESETS.filter((p) => !filter || p.name.toLowerCase().includes(filter) || p.desc.toLowerCase().includes(filter));
+    const grid = el('div', { class: 'preset-grid', style: { padding: '4px 8px' } }, filtered.map((preset) => el('div', {
       class: 'preset-card',
       onclick: () => {
         const msg = preset.apply(this.app);
@@ -274,12 +284,13 @@ export class ProjectPanel {
   }
 
   /* --------------------------- مؤثرات الصوت --------------------------- */
-  renderSoundFX() {
+  renderSoundFX(filter = '') {
     const host = this.soundfxEl;
     if (!host) return;
     clear(host);
     host.appendChild(el('div', { class: 'form-hint', style: { padding: '6px 8px' }, text: 'مؤثرات صوتية مدمجة وسينمائية — معاينة بالنقر على زر التشغيل، وإدراج بالضغط على (+).' }));
-    const list = el('div', { class: 'sfx-browser-list', style: { padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: '6px' } }, SOUND_EFFECTS.map((sfx) => {
+    const filtered = SOUND_EFFECTS.filter((sfx) => !filter || sfx.name.toLowerCase().includes(filter) || sfx.desc.toLowerCase().includes(filter));
+    const list = el('div', { class: 'sfx-browser-list', style: { padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: '6px' } }, filtered.map((sfx) => {
       return el('div', { class: 'sfx-card' }, [
         el('button', {
           class: 'tb-btn ghost sm',

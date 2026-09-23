@@ -24,8 +24,23 @@ import { applyI18n, setLang, getLang } from './core/i18n.js';
 import { el, clear, icon } from './ui/dom.js';
 import { clamp, framesToTimecode, timecodeToFrames, downloadBlob } from './core/util.js';
 
-const VIEWER_ZOOMS = [['fit', 'ملء'], ['0.25', '25%'], ['0.5', '50%'], ['1', '100%'], ['2', '200%'], ['4', '400%']];
-const VIEWER_RES = [['1', 'كاملة'], ['0.5', 'نصف (افتراضي)'], ['0.33', 'ثلث'], ['0.25', 'ربع (أسرع)']];
+const VIEWER_ZOOMS = [
+  ['fit', 'ملء الشاشة (Fit)'],
+  ['0.25', '25%'],
+  ['0.5', '50%'],
+  ['0.75', '75%'],
+  ['1', '100% (أصلي)'],
+  ['1.5', '150%'],
+  ['2', '200%'],
+  ['4', '400%'],
+];
+const VIEWER_RES = [
+  ['1', 'كاملة (100% دقة)'],
+  ['0.5', 'نصف (50% أسرع)'],
+  ['0.33', 'ثلث (33%)'],
+  ['0.25', 'ربع (25% خفيف)'],
+  ['auto', 'تلقائي ذكي (Auto)'],
+];
 const WS_TABS = [['default', 'افتراضي'], ['animation', 'تحريك'], ['preview', 'معاينة']];
 
 class App {
@@ -186,6 +201,15 @@ class App {
     document.getElementById('btn-screenrec')?.addEventListener('click', () => this.openScreenRecorder());
     document.getElementById('select-aspect-ratio')?.addEventListener('change', (e) => this.setAspectRatio(e.target.value));
     document.getElementById('master-vol-slider')?.addEventListener('input', (e) => this.audio.setMasterVolume(parseFloat(e.target.value) / 100));
+    const muteBtn = document.getElementById('btn-audio-mute');
+    muteBtn?.addEventListener('click', () => {
+      const isMuted = this.audio.toggleMute();
+      muteBtn.classList.toggle('muted', isMuted);
+      clear(muteBtn);
+      muteBtn.appendChild(icon(isMuted ? 'i-audio-mute' : 'i-audio', 14));
+      muteBtn.title = isMuted ? 'تشغيل الصوت' : 'كتم الصوت';
+      this.setStatus(isMuted ? 'تم كتم الصوت العام' : 'تم تشغيل الصوت العام');
+    });
     document.getElementById('btn-panel-menu')?.addEventListener('click', (e) => this.panelMenu(e));
     document.getElementById('btn-props-menu')?.addEventListener('click', (e) => this.propsMenu(e));
     document.getElementById('tl-columns-btn')?.addEventListener('click', (e) => this.panelMenu(e));
@@ -210,7 +234,7 @@ class App {
         else if (a === 'zoom-out') this.timeline.setZoom(this.timeline.zoom / 1.3);
         else if (a === 'fit') this.timeline.fitView();
         else if (a === 'snap') { store.timeline.snap = !store.timeline.snap; this.updateToggleStates(); }
-        else if (a === 'split') store.splitLayersAt(store.playhead);
+        else if (a === 'split') store.splitLayersAt(store.playhead, store.selection.layerIds.length ? store.selection.layerIds : null);
         else if (a === 'add-layer') this.timeline.addLayerMenu();
         else if (a === 'add-keyframe') {
           const layer = store.primaryLayer;
@@ -226,6 +250,13 @@ class App {
     document.getElementById('tab-graph')?.addEventListener('click', () => this.timeline.showGraphMode(true));
 
     // حقول التركيب والزمن
+    ['comp-fps', 'comp-duration', 'workarea-dur', 'tc-current'].forEach((id) => {
+      const input = document.getElementById(id);
+      input?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') input.blur();
+      });
+    });
+
     document.getElementById('comp-fps')?.addEventListener('change', (e) => store.updateComp({ fps: clamp(Math.round(+e.target.value) || 30, 1, 120) }));
     document.getElementById('comp-duration')?.addEventListener('change', (e) => {
       const f = timecodeToFrames(e.target.value, store.fps);
@@ -240,6 +271,7 @@ class App {
     document.getElementById('tc-current')?.addEventListener('change', (e) => {
       store.setPlayhead(clamp(timecodeToFrames(e.target.value, store.fps), 0, store.duration));
       this.timeline.updatePlayhead();
+      this.viewer.requestRender();
     });
 
     // استيراد الملفات
@@ -566,7 +598,29 @@ class App {
     this.store.updateComp({ width: w, height: h }, `تغيير المقاس إلى ${ratioStr}`);
     this.viewer.layout();
     this.viewer.fit();
+    this.syncCompFields();
     toastOk(`تم ضبط أبعاد الفيديو على ${w}×${h}`);
+  }
+
+  syncAspectRatioSelect() {
+    const sel = document.getElementById('select-aspect-ratio');
+    const comp = this.store.comp;
+    if (!sel || !comp) return;
+    const key = `${comp.width}x${comp.height}`;
+    const match = [...sel.options].find((o) => o.value === key);
+    if (match) {
+      sel.value = key;
+    } else {
+      let custom = sel.querySelector('option[data-custom="true"]');
+      if (!custom) {
+        custom = document.createElement('option');
+        custom.dataset.custom = 'true';
+        sel.appendChild(custom);
+      }
+      custom.value = key;
+      custom.textContent = `مخصص (${comp.width}×${comp.height})`;
+      sel.value = key;
+    }
   }
 
   startVUMeterLoop() {
@@ -575,7 +629,7 @@ class App {
     const dbText = document.getElementById('vu-db-text');
     if (!barL || !barR) return;
     const update = () => {
-      if (this.store.playing) {
+      if (this.store.playing && !this.audio.muted) {
         const levels = this.audio.getAudioLevels();
         barL.style.height = `${Math.min(100, Math.round(levels.left * 100))}%`;
         barR.style.height = `${Math.min(100, Math.round(levels.right * 100))}%`;
@@ -583,7 +637,7 @@ class App {
       } else {
         barL.style.height = '0%';
         barR.style.height = '0%';
-        if (dbText) dbText.textContent = '-∞ dB';
+        if (dbText) dbText.textContent = this.audio.muted ? 'مكتوم' : '-∞ dB';
       }
       requestAnimationFrame(update);
     };
@@ -788,6 +842,7 @@ class App {
     const wa = document.getElementById('workarea-dur');
     if (wa && document.activeElement !== wa) wa.value = framesToTimecode(comp.workArea?.[1] ?? comp.duration, comp.fps);
     this.syncTimeFields();
+    this.syncAspectRatioSelect();
     this.updateToggleStates();
   }
 

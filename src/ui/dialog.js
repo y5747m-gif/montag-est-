@@ -15,7 +15,7 @@ export function openDialog({
     el('header', { class: 'dialog-head' }, [
       icon(iconName, 15),
       el('h3', { text: title || '' }),
-      el('button', { class: 'tb-btn ghost sm', title: 'إغلاق', onclick: () => api?.close(null) }, [icon('i-plus', 14)]),
+      el('button', { class: 'tb-btn ghost sm dialog-close-btn', title: 'إغلاق', style: { transform: 'rotate(45deg)' }, onclick: () => api?.close(null) }, [icon('i-plus', 14)]),
     ]),
     el('div', { class: 'dialog-body' }, [typeof body === 'string' ? el('div', { html: body }) : body]),
     footer.length ? el('footer', { class: 'dialog-foot' }, footer) : null,
